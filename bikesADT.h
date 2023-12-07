@@ -4,3 +4,19 @@
 #include <strings.h>
 
 typedef struct bikeRentalSystemCDT * bikeRentalSystemADT;
+
+// crea nuevo conjunto
+bikeRentalSystemADT newBikeRentalSystem ();
+
+// apunta al primer elemento
+void toBegin (bikeRentalSystemADT bikeRentalSystemAdt);
+
+// retorna 1 si hay elemento siguiente
+int hasNext (bikeRentalSystemADT bikeRentalSystemAdt);
+
+// apunta al siguiente elemento
+int next (bikeRentalSystemADT bikeRentalSystemAdt);
+
+// libera el conjunto
+void freebikeRentalSystem ( bikeRentalSystemADT bikeRentalSystemAdt );
+
