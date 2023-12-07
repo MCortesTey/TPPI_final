@@ -5,8 +5,6 @@
 typedef struct TStation{
     char * name;
     size_t id;
-    size_t latitude;
-    size_t longitud;
     int idx; //indice correspondiente en la matriz de trips
     //[parametro para que guarde la fecha dell viaje mas antiguo para la estacion]
     size_t monthsCircular[MONTHS]; //contador aparte para registar la cantidad de viajes circulares hechos en cada mes,
