@@ -12,7 +12,7 @@ bikeRentalSystemADT newBikeRentalSystem(int minYear, int maxYear);
 
 //agrega una estacion en caso de que no estuviera registrada
 //retorna 1 si se agrego, 0 si ya estaba registrada
-int addStation(bikeRentalSystemADT bikeRentalSystem);
+int addStation(bikeRentalSystemADT bikeRentalSystem, char * name, int id);
 
 //registra un viaje y devuelve 1 si se agrego con exito.
 int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int day, int month, int year, int isMember);

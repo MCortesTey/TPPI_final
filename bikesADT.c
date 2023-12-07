@@ -6,7 +6,7 @@
 
 typedef struct TStation{
     char * name;
-    size_t id;
+    int id;
     int idx; //indice correspondiente en la matriz de trips
     //[parametro para que guarde la fecha dell viaje mas antiguo para la estacion]
     size_t memTrips; //contador de viajes hechos por miembros
@@ -49,8 +49,40 @@ bikeRentalSystemADT newBikeRentalSystem ( int minYear, int maxYear ){
     return new;
 }
 
-int addStation(bikeRentalSystemADT bikeRentalSystem);
+static TList addStationRec(TList list, char *name, int id, int * added, int idx ){
+    int c;
+    if( list == NULL || (c = strcasecmp(list->name, name)) > 0 ){
+        errno = 0;
+        TList new = malloc(sizeof(TStation));
+        if (new == NULL || errno == ENOMEM){
+            return NULL; //por ahi seria mejor tener una flag auxiliar para marcar errores
+        }
+        new->name = malloc(sizeof(char) * (strlen(name)+1));
+        strcpy(new->name, name);
+        new->id = id;
+        new->idx = idx; 
+        new->memTrips = 0;
+        new->tail = list; 
+        // [parametro del tiempo] inicializarlo en 0
+        return new;
+    }
+    if(c == 0){
+        return list;
+    }
+    list->tail = addStationRec(list->tail, name, id, added, idx);
+    return list;
+} 
 
+int addStation(bikeRentalSystemADT bikeRentalSystem, char *name, int id){
+    int added = 0;
+    int cant = bikeRentalSystem->dim;
+    bikeRentalSystem->first = addStationRec( bikeRentalSystem->first, name, id, &added, cant);
+    if(added){
+        bikeRentalSystem->dim++;
+        bikeRentalSystem->trips = enlargeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim);
+    }
+    return added;
+}
 
 int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int day, int month, int year, int isMember);
 
