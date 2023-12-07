@@ -1,6 +1,9 @@
 #include "./bikesADT.h"
 #define DAYS 7
 #define MONTHS 12
+#define CHECKMEMORY(ptr) if ( ptr == NULL ) {\
+                            return NULL; \
+                            \}
 
 typedef struct TStation{
     char * name;
@@ -25,3 +28,28 @@ typedef struct bikeRentalSystemCDT{
     int year_MAX; // anio hasta el cual se realizan viajes
     int year_MIN; // anio desde el cual se realizan viajes
 }bikeRentalSystemCDT;
+
+bikeRentalSystemADT newBikeRentalSystem ( int minYear, int maxYear ){
+    bikeRentalSystemADT new = calloc(sizeof(bikeRentalSystemCDT));
+    CHECKMEMORY(new);
+    new->year_MIN = minYear;
+    new->year_MAX = maxYear;
+    return new;
+}
+
+void toBegin (bikeRentalSystemADT bikeRentalSystemAdt) {
+    bikeRentalSystemAdt->iter = bikeRentalSystemAdt->first;
+}
+
+int hasNext (bikeRentalSystemADT bikeRentalSystemAdt) { 
+    return bikeRentalSystemAdt->iter != NULL;
+}
+
+TList next (bikeRentalSystemADT bikeRentalSystemAdt) {
+    if ( ! hasNext(bikeRentalSystemAdt) ){
+        return NULL
+    }
+    TList ans = bikeRentalSystemAdt->iter;
+    bikeRentalSystemAdt->iter = bikeRentalSystemAdt->iter->tail;
+    return ans;
+}

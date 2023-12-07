@@ -15,7 +15,7 @@ void toBegin (bikeRentalSystemADT bikeRentalSystemAdt);
 int hasNext (bikeRentalSystemADT bikeRentalSystemAdt);
 
 // apunta al siguiente elemento
-int next (bikeRentalSystemADT bikeRentalSystemAdt);
+TList next (bikeRentalSystemADT bikeRentalSystemAdt);
 
 // libera el conjunto
 void freebikeRentalSystem ( bikeRentalSystemADT bikeRentalSystemAdt );
