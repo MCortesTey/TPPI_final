@@ -103,3 +103,24 @@ TList next (bikeRentalSystemADT bikeRentalSystem) {
     bikeRentalSystem->iter = bikeRentalSystem->iter->tail;
     return ans;
 }
+
+char * getName (bikeRentalSystemADT bikeRentalSystem){
+    if ( ! hasNext(bikeRentalSystem)){
+        return NULL;
+    }
+    return bikeRentalSystem->iter->name;
+}
+
+size_t getMemTrips ( bikeRentalSystemADT bikeRentalSystem ){
+    if ( ! hasNext(bikeRentalSystem) ){
+        return NULL;
+    }
+    return bikeRentalSystem->iter->memTrips;
+}
+
+size_t getIdx ( bikeRentalSystemADT bikeRentalSystem ){
+    if ( ! hasNext(bikeRentalSystem) ){
+        return NULL;
+    }
+    return bikeRentalSystem->iter->idx;
+}
