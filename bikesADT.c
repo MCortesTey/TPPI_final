@@ -27,14 +27,15 @@ typedef struct dayTrips{
     size_t ended; 
 }TDayTrips;
 
-typedef struct TTopMonth{
-    char *top[TOP]; //top de estaciones ordenado
-}TTopMonth;
-
 typedef struct TNameId{
     int id;
     TList st;
+    size_t cirTrips;
 }TNameId;
+
+typedef struct TTopMonth{
+    TNameId top[TOP]; //top de estaciones ordenado
+}TTopMonth;
 
 typedef struct bikeRentalSystemCDT{
     TList first; //puntero al primero de la lista de estaciones, ordenadas alfabeticamente;
@@ -70,58 +71,78 @@ static void updateIds(TNameId *arr, size_t dim, TList save){
     qsort(arr, dim, sizeof(TNameId), qcmp);
 }
 
-static void enlargeTrips(size_t ** trips, size_t dim){
+static TList binarySearch(TNameId *arr, int low, int high, int id){ // funcion para buscar la st por el ID de forma eficiente
+    while (low <= high)
+    {
+        int mid = low + (high - high) / 2;
+        if (arr[mid].id == id)
+        {
+            return arr[mid].st;
+        }
+        if (arr[mid].id < id)
+        {
+            low = mid + 1;
+        }
+        else
+        {
+            high = mid - 1;
+        }
+    }
+    return NULL;
+}
+
+static void enlargeTrips(size_t **trips, size_t dim){
     errno = 0;
     int i, j;
     trips = realloc(trips, dim * sizeof(size_t *)); // reservo memoria para una fila mas
     if (errno == ENOMEM){
         return 1;
     }
-    for (j = 0 ; j < dim ; j++){ //lleno de 0 la nueva fila
-        trips[dim-1][j] = 0;
+    for (j = 0; j < dim; j++){ // lleno de 0 la nueva fila
+        trips[dim - 1][j] = 0;
     }
     for (i = 0; i < dim; i++){
         trips[i] = realloc(trips[i], sizeof(size_t) * dim); // reservo y agrego una columna mas al final de cada fila
         if (errno == ENOMEM){
             return 1;
         }
-        trips[i][dim-1] = 0; //lleno de 0
+        trips[i][dim - 1] = 0; // lleno de 0
     }
 }
 
-static TList addStationRec(TList list, char *name, int id, int * added, int idx, TList save ){
+static TList addStationRec(TList list, char *name, int id, int *added, int idx, TList save){
     int c;
-    if( list == NULL || (c = strcasecmp(list->name, name)) > 0 ){
+    if (list == NULL || (c = strcasecmp(list->name, name)) > 0){
         errno = 0;
         TList new = malloc(sizeof(TStation));
         if (new == NULL || errno == ENOMEM){
-            return NULL; //por ahi seria mejor tener una flag auxiliar para marcar errores
+            return NULL; // por ahi seria mejor tener una flag auxiliar para marcar errores
         }
-        new->name = malloc(sizeof(char) * (strlen(name)+1));
+        new->name = malloc(sizeof(char) * (strlen(name) + 1));
         strcpy(new->name, name);
         new->id = id;
-        new->idx = idx; 
+        new->idx = idx;
         new->memTrips = 0;
-        new->oldestEnd =""; 
-        new->oldestTrip; //no estoy seguro como se inicializa aun 
+        new->oldestEnd = "";
+        new->oldestTrip; // no estoy seguro como se inicializa aun
         new->tripsPopularEnd = 0;
-        new->tail = list; 
+        new->tail = list;
         save = new;
         return new;
     }
-    if(c == 0){
+    if (c == 0){
         return list;
     }
     list->tail = addStationRec(list->tail, name, id, added, idx, save);
     return list;
-} 
+}
 
 int addStation(bikeRentalSystemADT bikeRentalSystem, char *name, int id){
     int added = 0;
     int cant = bikeRentalSystem->dim;
     TList save;
-    bikeRentalSystem->first = addStationRec( bikeRentalSystem->first, name, id, &added, cant, save);
-    if(added){
+    bikeRentalSystem->first = addStationRec(bikeRentalSystem->first, name, id, &added, cant, save);
+    if (added){
         bikeRentalSystem->dim++;
         enlargeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim);
         updateIds(bikeRentalSystem->ids, bikeRentalSystem->dim, save);
@@ -129,7 +150,43 @@ int addStation(bikeRentalSystemADT bikeRentalSystem, char *name, int id){
     return added;
 }
 
-int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int day, int month, int year, int isMember);
+static struct tm mkTimeStruct(int minutes, int hour, int day, int month, int year){ //funcion para armar la estructura del nuevo dia
+    struct tm info;
+    info.tm_year = year - 1900;
+    info.tm_mon = month;
+    info.tm_mday = day;
+    info.tm_hour = hour;
+    info.tm_min = minutes;
+    info.tm_sec = 0;
+    info.tm_isdst = -1;
+    return info;
+}
+
+int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int minutes, int hour, int day, int month, int year, int isMember){
+    TList start, end;
+    start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId);
+    end = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, endId);
+    if (start == NULL || end == NULL){
+        return 0;
+    }
+    struct tm date = mkTimeStruct(minutes, hour, day, month, year);
+    int ret = mktime(&date);
+    int wDay = date.tm_wday; //int con el numero del dia de la semana
+
+    int idxStart = start->idx; //consigo indices
+    int idxEnd = end->idx;
+
+    bikeRentalSystem->trips[idxStart][idxEnd]++; //sumo en la matriz
+    start->memTrips+=isMember; 
+    if(idxStart != idxEnd){ //si no es circular lo considero candidato para viaje mas antiguo y/o ruta mas popular
+        checkOldest(start, date, end);
+        checkPop(start, bikeRentalSystem->trips[idxStart][idxEnd], end);
+    }else{
+        int cMon = date.tm_mon;
+        countCircularTop(start, cMon);
+    }
+    return 1;
+}
 
 void toBegin (bikeRentalSystemADT bikeRentalSystem) {
     bikeRentalSystem->iter = bikeRentalSystem->first;
