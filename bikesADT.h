@@ -29,5 +29,13 @@ TList next (bikeRentalSystemADT bikeRentalSystem);
 // libera el conjunto
 void freebikeRentalSystem ( bikeRentalSystemADT bikeRentalSystem );
 
+// retorna nombre de la estacion donde iter apunta
+char * getName (bikeRentalSystemADT bikeRentalSystem);
+
+// retorna cantidad de viajes empezados por miembros de la estacion donde iter apunta
+size_t getMemTrips ( bikeRentalSystemADT bikeRentalSystem );
+
+// retorna indice correspondiente a la estacion donde iter apunta, en la matriz de trips
+size_t getIdx ( bikeRentalSystemADT bikeRentalSystem );
 
 #endif

@@ -13,8 +13,13 @@ static List1 addRec (List1 list, char * name, size_t memTrips, size_t total ){
     if ( list == NULL || compare(list->cantTotales, total) < 0 ){
         List1 new = malloc(1, sizeof(Tquery1));
         CHECKMEMORY(new);
+        if ( errno == ENOMEM ){
+            return NULL;
+        }
         size_t casuales = total - memTrips;
-        new->name = name;
+        new->name = malloc(sizeof(char) * strlen(name) + 1);
+        CHECKMEMORY(new->name);
+        strcpy(new->name, name);
         new->cantMiembros = memTrips;
         new->cantCasuales = casuales;
         new->cantTotales = total;
