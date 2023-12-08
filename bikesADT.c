@@ -39,7 +39,7 @@ typedef struct bikeRentalSystemCDT{
     TNameId *ids;   //arreglo de estructuras para vincular la info de una estacion por medio de su id
     TDayTrips days[DAYS]; //arreglo  estructura de dias de la semana, con contador de viajes iniciados y finalizados
     TTopMonth circularTrips[MONTHS]; // contador aparte para registar la cantidad de viajes circulares hechos en cada mes
-    size_t dim; //cantidad de esatciones registradas
+    size_t dim; //cantidad de estaciones registradas
     int yearMAX; // anio hasta el cual se realizan viajes
     int yearMIN; // anio desde el cual se realizan viajes
 }bikeRentalSystemCDT;
