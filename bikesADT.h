@@ -23,7 +23,7 @@ typedef struct query2 {
     List2 tail;
 } Tquery2;
 
-typedef Tquery2
+typedef Tquery2 * List2;
 
 typedef struct bikeRentalSystemCDT * bikeRentalSystemADT;
 

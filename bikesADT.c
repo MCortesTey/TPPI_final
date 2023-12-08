@@ -227,8 +227,8 @@ char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem ){
     return bikeRentalSystem->iter->PopularEnd;
 }
 
-List1 query2 ( bikeRentalSystem bikeRentalSystem ){
-    List1 query2 = calloc(1, sizeof(Tquery2));
+List2 query2 ( bikeRentalSystem bikeRentalSystem ){
+    List2 query2 = calloc(1, sizeof(Tquery2));
     CHECKMEMORY(query2);
 
     toBegin(bikeRentalSystem);
