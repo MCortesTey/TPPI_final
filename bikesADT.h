@@ -11,7 +11,7 @@ typedef struct query1 {
     size_t cantMem; // cantidad de viajes empezados por miembros
     size_t cantCas; // cantidad de viajes empezados por casuales
     size_t cantTot; // cantidad de viajes empezados totales
-    List1 tail;
+    struct query1 * tail;
 } Tquery1;
 
 typedef Tquery1 * List1;
@@ -20,7 +20,7 @@ typedef struct query2 {
     char * nameSt; // nombre de la estacion de inicio
     char * nameEnd; // nombre de la esatcion de fin
     time_t oldestTrip; // fecha y hora del viaje mas antiguo
-    List2 tail;
+    struct query2 *tail;
 } Tquery2;
 
 typedef Tquery2 * List2;
@@ -58,8 +58,8 @@ size_t getMemTrips ( bikeRentalSystemADT bikeRentalSystem );
 // retorna indice correspondiente a la estacion donde iter apunta, en la matriz de trips
 size_t getIdx ( bikeRentalSystemADT bikeRentalSystem );
 
-List1 query1 ( bikeRentalSystemADT bikeRentalSystem );
+List1 query1( bikeRentalSystemADT bikeRentalSystem );
 
-List1 query2 ( bikeRentalSystem bikeRentalSystem )
+List2 query2( bikeRentalSystemADT bikeRentalSystem );
 
 #endif
