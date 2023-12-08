@@ -22,13 +22,13 @@ typedef  struct Tdays{
     size_t ended; 
 }Tdays;
 
+typedef struct dayTrips
+{
+    size_t started;
+    size_t ended;
+} TDayTrips;
 
-typedef  struct query3 {
-    Tdays query3[DAYS];
-} Tquery3;
-
-
-typedef Tquery1 * List1;
+typedef Tquery1 * TList1;
 
 typedef struct query2 {
     char * nameSt; // nombre de la estacion de inicio
@@ -37,13 +37,14 @@ typedef struct query2 {
     struct query2 *tail;
 } Tquery2;
 
-typedef Tquery2 * List2;
+typedef Tquery2 * TList2;
 
 
 typedef struct query4{ 
     char* nameSt; // nombre estacion inicio
     char* nameEnd;// nombre estacion fin
-    size_t countTrips //cantidad de viajes entre ambas estaciones
+    size_t countTrips;// cantidad de viajes entre ambas estaciones
+    struct query4 *tail;
 }Tquery4;
 
 typedef Tquery4 * TList4;
@@ -81,13 +82,11 @@ size_t getMemTrips ( bikeRentalSystemADT bikeRentalSystem );
 // retorna indice correspondiente a la estacion donde iter apunta, en la matriz de trips
 size_t getIdx ( bikeRentalSystemADT bikeRentalSystem );
 
-List1 query1( bikeRentalSystemADT bikeRentalSystem );
+TList1 query1( bikeRentalSystemADT bikeRentalSystem );
 
-List2 query2( bikeRentalSystemADT bikeRentalSystem );
+TList2 query2( bikeRentalSystemADT bikeRentalSystem );
 
+TDayTrips * query3(bikeRentalSystemADT bikeRentalSystem  );
 
-Tquery3 query3(bikeRentalSystemADT bikeRentalSystem  );
-
-
-List4 query4( bikeRentalSystemADT bikeRentalSystem);
+TList4 query4( bikeRentalSystemADT bikeRentalSystem);
 #endif

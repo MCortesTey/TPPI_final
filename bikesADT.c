@@ -22,11 +22,6 @@ typedef struct TStation{
 
 typedef struct TStation * TList;
 
-typedef struct dayTrips{
-    size_t started;
-    size_t ended; 
-}TDayTrips;
-
 typedef struct TNameId{
     int id;
     TList st;
@@ -72,19 +67,15 @@ static void updateIds(TNameId *arr, size_t dim, TList save){
 }
 
 static TList binarySearch(TNameId *arr, int low, int high, int id){ // funcion para buscar la st por el ID de forma eficiente
-    while (low <= high)
-    {
-        int mid = low + (high - high) / 2;
-        if (arr[mid].id == id)
-        {
+    while (low <= high){
+        int mid = low + (high - low) / 2;
+        if (arr[mid].id == id){
             return arr[mid].st;
         }
-        if (arr[mid].id < id)
-        {
+        if (arr[mid].id < id){
             low = mid + 1;
         }
-        else
-        {
+        else{
             high = mid - 1;
         }
     }
@@ -236,9 +227,9 @@ size_t compare ( size_t elem1, size_t elem2 ){
     return elem1 - elem2;
 }
 
-static List1 addRecq1 (List1 list, char * name, size_t memTrips, size_t total ){
+static TList1 addRecq1 (TList1 list, char * name, size_t memTrips, size_t total ){
     if ( list == NULL || compare(list->cantTot, total) < 0 ){
-        List1 new = malloc(sizeof(Tquery1));
+        TList1 new = malloc(sizeof(Tquery1));
         CHECKMEMORY(new)
         if ( errno == ENOMEM ){
             return NULL;
@@ -256,8 +247,8 @@ static List1 addRecq1 (List1 list, char * name, size_t memTrips, size_t total ){
     return list;
 }
 
-List1 query1 ( bikeRentalSystemADT bikeRentalSystem ){
-    List1 query1 = calloc(1, sizeof(Tquery1));
+TList1 query1 ( bikeRentalSystemADT bikeRentalSystem ){
+    TList1 query1 = calloc(1, sizeof(Tquery1));
     CHECKMEMORY(query1)
 
     toBegin(bikeRentalSystem);
@@ -286,8 +277,8 @@ char * getOldestEnd (bikeRentalSystemADT bikeRentalSystem ){
     return bikeRentalSystem->iter->oldestEnd;
 }
 
-List2 query2( bikeRentalSystemADT bikeRentalSystem ){
-    List2 ans = calloc(1, sizeof(Tquery2));
+TList2 query2( bikeRentalSystemADT bikeRentalSystem ){
+    TList2 ans = calloc(1, sizeof(Tquery2));
     CHECKMEMORY(ans);
 
     toBegin(bikeRentalSystem);
@@ -309,18 +300,16 @@ List2 query2( bikeRentalSystemADT bikeRentalSystem ){
 
 
 // Query 3:  Total viajes iniciados y finalizados por dia de la semana
-Tquery3 query3(bikeRentalSystemADT bikeRentalSystem  ){
-    Tquery3 query3= calloc( 1, sizeof( Tquery3));
-
-    CHECKMEMORY( query3);
-    if ( errno == ENUMEN ) 
+TDayTrips * query3(bikeRentalSystemADT bikeRentalSystem ){
+    TDayTrips * ans = malloc(sizeof(TDayTrips) * DAYS);
+    CHECKMEMORY( ans);
+    if ( errno == ENOMEM ) 
         return NULL;
-    for ( int i=0 ;i<DAYS ;i++){
-        
-        query3[i].started= bikeRentalSystem->days[i].started;
-        query3[i].ended= bikeRentalSystem->days[i].ended;
+    for ( int i=0 ; i<DAYS ;i++){
+        ans[i].started= bikeRentalSystem->days[i].started;
+        ans[i].ended= bikeRentalSystem->days[i].ended;
     } 
-    return query3;
+    return ans;
 }
 
 // Query 4: Ruta mas popular por estación
@@ -335,24 +324,25 @@ char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem ){
     if ( ! hasNext(bikeRentalSystem)){
         return NULL;
     }
-    return bikeRentalSystem->iter->PopularEnd;
+    return bikeRentalSystem->iter->popularEnd;
 }
 
 
-List4 query4( bikeRentalSystemADT bikeRentalSystem){
+TList4 query4( bikeRentalSystemADT bikeRentalSystem){
     toBegin( bikeRentalSystem);
+    TList4 ans;
     while( hasNext( bikeRentalSystem)){
-        List4 query4= malloc( sizeof( Tquery4));
-        CHECKMEMORY( query4);
-        query4->nameSt= copyStr( getName( bikeRentalSystem));
-        CHECKMEMORY( query4->nameSt);
-        query4->nameEnd= copyStr(  getPopularEnd( bikeRentalSystem) );
-        CHECHMEMORY( query4->nameEnd);
-        query4->countTrips= bikeRentalSystem->iter->tripsPopularEnd;
-        query4=query4->tail;
+        ans= malloc( sizeof( Tquery4));
+        CHECKMEMORY( ans);
+        ans->nameSt= copyStr( getName( bikeRentalSystem));
+        CHECKMEMORY( ans->nameSt);
+        ans->nameEnd= copyStr(  getPopularEnd( bikeRentalSystem) );
+        CHECHMEMORY( ans->nameEnd);
+        ans->countTrips= bikeRentalSystem->iter->tripsPopularEnd;
+        ans=ans->tail;
         next( bikeRentalSystem);
     }
-    return query4;
+    return ans;
 }
 
 
