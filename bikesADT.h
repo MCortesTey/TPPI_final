@@ -39,6 +39,15 @@ typedef struct query2 {
 
 typedef Tquery2
 
+
+typedef struct query4{ 
+    char* nameSt; // nombre estacion inicio
+    char* nameEnd;// nombre estacion fin
+    size_t countTrips //cantidad de viajes entre ambas estaciones
+}Tquery4;
+
+typedef Tquery4 * TList4;
+
 typedef struct bikeRentalSystemCDT * bikeRentalSystemADT;
 
 // crea nuevo conjunto

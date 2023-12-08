@@ -179,7 +179,7 @@ size_t compare ( size_t elem1, size_t elem2 ){
     return elem1 - elem2;
 }
 
-static List1 addRecq1 (List1 list, char * name, size_t memTrips, size_t total ){
+static List1 addRecQ1 (List1 list, char * name, size_t memTrips, size_t total ){
     if ( list == NULL || compare(list->cantTotales, total) < 0 ){
         List1 new = malloc(1, sizeof(Tquery1));
         CHECKMEMORY(new)
@@ -195,7 +195,7 @@ static List1 addRecq1 (List1 list, char * name, size_t memTrips, size_t total ){
         new->cantTot = total;
         return new;
     }
-    list->tail = addRec(list->tail, name, memTrips, total );
+    list->tail = addRecQ1(list->tail, name, memTrips, total );
     return list;
 }
 
@@ -210,7 +210,7 @@ List1 query1 ( bikeRentalSystemADT bikeRentalSystem ){
         for ( size_t j=0; j < bikeRentalSystem->dim; j++ ){
             total += bikeRentalSystem->trips[idx][j];
         }
-        query1 = addRec (query1, getName(bikeRentalSystem) , getMemTrips(bikeRentalSystem), total );
+        query1 = addRecQ1(query1, getName(bikeRentalSystem) , getMemTrips(bikeRentalSystem), total );
         next(bikeRentalSystem);
     }
     return query1;
@@ -220,11 +220,13 @@ List1 query1 ( bikeRentalSystemADT bikeRentalSystem ){
 // -orden alfabetico 
 // -no viajes circulares
 
-char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem ){
+
+
+char * getOldestEnd (bikeRentalSystemADT bikeRentalSystem ){
     if ( ! hasNext(bikeRentalSystem)){
         return NULL;
     }
-    return bikeRentalSystem->iter->PopularEnd;
+    return bikeRentalSystem->iter->oldestEnd;
 }
 
 List1 query2 ( bikeRentalSystem bikeRentalSystem ){
@@ -235,11 +237,11 @@ List1 query2 ( bikeRentalSystem bikeRentalSystem ){
     while ( hasNext(bikeRentalSystem) ){
         query2->nameSt = malloc(strlen(getName(bikeRentalSystem)) + 1 );
         CHECKMEMORY(query2->nameSt)
-        query2->nameEnd = malloc(strlen(getPopularEnd(bikeRentalSystem)) + 1 );
+        query2->nameEnd = malloc(strlen(getOldestEnd(bikeRentalSystem)) + 1 );
         CHECKMEMORY(query2->nameEnd)
 
         strcpy(query2->nameSt, getName(bikeRentalSystem));
-        strcpy(query2->nameEnd, getPopularEnd(bikeRentalSystem));
+        strcpy(query2->nameEnd, getOldestEnd(bikeRentalSystem));
         query2->oldestTrip = bikeRentalSystem->iter->oldestTrip;
 
         query2 = query2->tail;
@@ -264,9 +266,38 @@ List3 query3(bikeRentalSystemADT bikeRentalSystem  ){
     return query3;
 }
 
-
-
 // Query 4: Ruta mas popular por estación
 // - orden alfabetico
+
+static char * copyStr(const char * s) {
+    return strcpy(malloc(strlen(s)+1), s);
+}
+
+
+char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem ){
+    if ( ! hasNext(bikeRentalSystem)){
+        return NULL;
+    }
+    return bikeRentalSystem->iter->PopularEnd;
+}
+
+
+List4 query4( bikeRentalSystemADT bikeRentalSystem){
+    toBegin( bikeRentalSystem);
+    while( hasNext( bikeRentalSystem)){
+        List4 query4= malloc( sizeof( Tquery4));
+        CHECKMEMORY( query4);
+        query4->nameSt= copyStr( getName( bikeRentalSystem));
+        CHECKMEMORY( query4->nameSt);
+        query4->nameEnd= copyStr(  getPopularEnd( bikeRentalSystem) );
+        CHECHMEMORY( query4->nameEnd);
+        query4->countTrips= bikeRentalSystem->iter->tripsPopularEnd;
+        query4=query4->tail;
+        next( bikeRentalSystem);
+    }
+    return query4;
+}
+
+
 
 // Query 5: Top 3 estaciones con mayor cantidad de viajes circulares por mes
