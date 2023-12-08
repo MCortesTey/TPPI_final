@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <strings.h>
+#include <time.h>
 #ifndef __bikesADT_h
 #define __bikesADT_h
 
