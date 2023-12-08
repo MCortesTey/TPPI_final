@@ -219,6 +219,20 @@ List1 query1 ( bikeRentalSystemADT bikeRentalSystem, List1 query1 ){
 
 
 // Query 3:  Total viajes iniciados y finalizados por dia de la semana
+List3 query3(bikeRentalSystemADT bikeRentalSystem  ){
+    List3 query3= calloc( 1, sizeof( Tquery3));
+
+    CHECKMEMORY( query3);
+    if ( errno == ENUMEN ) 
+        return NULL;
+    for ( int i=0 ;i<DAYS ;i++){
+        
+        query3[i].started= bikeRentalSystem->days[i].started;
+        query3[i].ended= bikeRentalSystem->days[i].ended;
+    } 
+    return query3;
+}
+
 
 
 // Query 4: Ruta mas popular por estación

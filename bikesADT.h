@@ -5,6 +5,8 @@
 #include <time.h>
 #ifndef __bikesADT_h
 #define __bikesADT_h
+#define DAYS 7 
+
 
 typedef struct query1 {
     char * name; // nombre de la estacion
@@ -13,6 +15,18 @@ typedef struct query1 {
     size_t cantTotales; // cantidad de viajes empezados totales
     List1 tail;
 } Tquery1;
+
+
+typedef  struct Tdays{
+    size_t started ;
+    size_t ended; 
+}Tdays;
+
+
+typedef  struct query3 {
+    Tdays query3[DAYS];
+} Tquery3;
+
 
 typedef Tquery1 * List1;
 
