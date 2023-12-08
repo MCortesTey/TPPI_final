@@ -8,7 +8,10 @@ typedef struct TStation{
     char * name;
     int id;
     int idx; //indice correspondiente en la matriz de trips
-    //[parametro para que guarde la fecha dell viaje mas antiguo para la estacion]
+    time_t oldestTrip; //tiempo del viaje mas antiguo
+    char * oldestEnd; //nombre estacion de fin viaje mas antiguio
+    size_t tripsPopularEnd; //cantidad de la ruta mas visitado
+    char * popularEnd;
     size_t memTrips; //contador de viajes hechos por miembros
     struct TStation * tail;
 }  TStation;
@@ -49,7 +52,40 @@ bikeRentalSystemADT newBikeRentalSystem ( int minYear, int maxYear ){
     return new;
 }
 
-static TList addStationRec(TList list, char *name, int id, int * added, int idx ){
+static int qcmp(const void *e1, const void *e2)
+{
+    const TNameId *ptr1 = (const TNameId *)e1;
+    const TNameId *ptr2 = (const TNameId *)e2;
+    return (ptr1->id - ptr2->id);
+}
+
+static void updateIds(TNameId *arr, size_t dim, TList save){
+    arr = realloc(arr, sizeof(TNameId) * dim );
+    arr[dim-1].id = save->id;
+    arr[dim-1].st = save->name; 
+    qsort(arr, dim, sizeof(TNameId), qcmp);
+}
+
+static void enlargeTrips(size_t ** trips, size_t dim){
+    errno = 0;
+    int i, j;
+    trips = realloc(trips, dim * sizeof(size_t *)); // reservo memoria para una fila mas
+    if (errno == ENOMEM){
+        return 1;
+    }
+    for (j = 0 ; j < dim ; j++){ //lleno de 0 la nueva fila
+        trips[dim-1][j] = 0;
+    }
+    for (i = 0; i < dim; i++){
+        trips[i] = realloc(trips[i], sizeof(size_t) * dim); // reservo y agrego una columna mas al final de cada fila
+        if (errno == ENOMEM){
+            return 1;
+        }
+        trips[i][dim-1] = 0; //lleno de 0
+    }
+}
+
+static TList addStationRec(TList list, char *name, int id, int * added, int idx, TList save ){
     int c;
     if( list == NULL || (c = strcasecmp(list->name, name)) > 0 ){
         errno = 0;
@@ -62,24 +98,29 @@ static TList addStationRec(TList list, char *name, int id, int * added, int idx 
         new->id = id;
         new->idx = idx; 
         new->memTrips = 0;
+        new->oldestEnd =""; 
+        new->oldestTrip; //no estoy seguro como se inicializa aun 
+        new->tripsPopularEnd = 0;
         new->tail = list; 
-        // [parametro del tiempo] inicializarlo en 0
+        save = new;
         return new;
     }
     if(c == 0){
         return list;
     }
-    list->tail = addStationRec(list->tail, name, id, added, idx);
+    list->tail = addStationRec(list->tail, name, id, added, idx, save);
     return list;
 } 
 
 int addStation(bikeRentalSystemADT bikeRentalSystem, char *name, int id){
     int added = 0;
     int cant = bikeRentalSystem->dim;
-    bikeRentalSystem->first = addStationRec( bikeRentalSystem->first, name, id, &added, cant);
+    TList save;
+    bikeRentalSystem->first = addStationRec( bikeRentalSystem->first, name, id, &added, cant, save);
     if(added){
         bikeRentalSystem->dim++;
-        bikeRentalSystem->trips = enlargeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim);
+        enlargeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim);
+        updateIds(bikeRentalSystem->ids, bikeRentalSystem->dim, save);
     }
     return added;
 }
