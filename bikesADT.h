@@ -1,9 +1,19 @@
-#ifndef __bikesADT_h
-#define __bikesADT_h
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <strings.h>
+#ifndef __bikesADT_h
+#define __bikesADT_h
+
+typedef struct query1 {
+    char * name; // nombre de la estacion
+    size_t cantMiembros; // cantidad de viajes empezados por miembros
+    size_t cantCasuales; // cantidad de viajes empezados por casuales
+    size_t cantTotales; // cantidad de viajes empezados totales
+    List1 tail;
+} Tquery1;
+
+typedef Tquery1 * List1;
 
 typedef struct bikeRentalSystemCDT * bikeRentalSystemADT;
 
@@ -37,5 +47,7 @@ size_t getMemTrips ( bikeRentalSystemADT bikeRentalSystem );
 
 // retorna indice correspondiente a la estacion donde iter apunta, en la matriz de trips
 size_t getIdx ( bikeRentalSystemADT bikeRentalSystem );
+
+List1 query1 ( bikeRentalSystemADT bikeRentalSystem, List1 query1 );
 
 #endif
