@@ -179,27 +179,30 @@ size_t compare ( size_t elem1, size_t elem2 ){
     return elem1 - elem2;
 }
 
-static List1 addRec (List1 list, char * name, size_t memTrips, size_t total ){
+static List1 addRecq1 (List1 list, char * name, size_t memTrips, size_t total ){
     if ( list == NULL || compare(list->cantTotales, total) < 0 ){
         List1 new = malloc(1, sizeof(Tquery1));
-        CHECKMEMORY(new);
+        CHECKMEMORY(new)
         if ( errno == ENOMEM ){
             return NULL;
         }
         size_t casuales = total - memTrips;
-        new->name = malloc(sizeof(char) * strlen(name) + 1);
+        new->name = malloc(strlen(name) + 1);
         CHECKMEMORY(new->name);
         strcpy(new->name, name);
-        new->cantMiembros = memTrips;
-        new->cantCasuales = casuales;
-        new->cantTotales = total;
+        new->cantMem = memTrips;
+        new->cantCas = casuales;
+        new->cantTot = total;
         return new;
     }
     list->tail = addRec(list->tail, name, memTrips, total );
     return list;
 }
 
-List1 query1 ( bikeRentalSystemADT bikeRentalSystem, List1 query1 ){
+List1 query1 ( bikeRentalSystemADT bikeRentalSystem ){
+    List query1 = calloc(1, sizeof(Tquery1));
+    CHECKMEMORY(query1)
+
     toBegin(bikeRentalSystem);
     while ( hasNext(bikeRentalSystem) ){
         size_t idx = getIdx(bikeRentalSystem);
@@ -216,6 +219,34 @@ List1 query1 ( bikeRentalSystemADT bikeRentalSystem, List1 query1 ){
 // Query 2: Viaje mas antiguo por estación 
 // -orden alfabetico 
 // -no viajes circulares
+
+char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem ){
+    if ( ! hasNext(bikeRentalSystem)){
+        return NULL;
+    }
+    return bikeRentalSystem->iter->PopularEnd;
+}
+
+List1 query2 ( bikeRentalSystem bikeRentalSystem ){
+    List1 query2 = calloc(1, sizeof(Tquery2));
+    CHECKMEMORY(query2);
+
+    toBegin(bikeRentalSystem);
+    while ( hasNext(bikeRentalSystem) ){
+        query2->nameSt = malloc(strlen(getName(bikeRentalSystem)) + 1 );
+        CHECKMEMORY(query2->nameSt)
+        query2->nameEnd = malloc(strlen(getPopularEnd(bikeRentalSystem)) + 1 );
+        CHECKMEMORY(query2->nameEnd)
+
+        strcpy(query2->nameSt, getName(bikeRentalSystem));
+        strcpy(query2->nameEnd, getPopularEnd(bikeRentalSystem));
+        query2->oldestTrip = bikeRentalSystem->iter->oldestTrip;
+
+        query2 = query2->tail;
+        next(bikeRentalSystem);
+    }
+    return query2;
+}
 
 
 // Query 3:  Total viajes iniciados y finalizados por dia de la semana
