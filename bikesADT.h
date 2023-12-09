@@ -16,12 +16,6 @@ typedef struct query1 {
     struct query1 * tail;
 } Tquery1;
 
-
-typedef  struct Tdays{
-    size_t started ;
-    size_t ended; 
-}Tdays;
-
 typedef struct dayTrips
 {
     size_t started;
@@ -59,7 +53,7 @@ bikeRentalSystemADT newBikeRentalSystem(int minYear, int maxYear);
 int addStation(bikeRentalSystemADT bikeRentalSystem, char * name, int id);
 
 //registra un viaje y devuelve 1 si se agrego con exito.
-int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int minutes, int hour, int day, int month, int year, int isMember);
+int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int iminutes, int ihour, int iday, int imonth, int iyear, int isMember, int fminutes, int fhour, int fday, int fmonth, int fyear);
 
 // apunta al primer elemento
 void toBegin (bikeRentalSystemADT bikeRentalSystem);

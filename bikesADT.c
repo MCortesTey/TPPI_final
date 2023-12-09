@@ -114,8 +114,7 @@ static TList addStationRec(TList list, char *name, int id, int *added, int idx, 
         new->id = id;
         new->idx = idx;
         new->memTrips = 0;
-        new->oldestEnd = "";
-        new->oldestTrip; // no estoy seguro como se inicializa aun
+        new->oldestTrip = 0;// no estoy seguro como se inicializa aun
         new->tripsPopularEnd = 0;
         new->tail = list;
         save = new;
@@ -153,16 +152,48 @@ static struct tm mkTimeStruct(int minutes, int hour, int day, int month, int yea
     return info;
 }
 
-int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int minutes, int hour, int day, int month, int year, int isMember){
+static void countToDay(TDayTrips * days, int wDayStart, int wDayEnd){
+    days[wDayStart].started++;
+    days[wDayEnd].ended++;
+}
+
+static void checkOldest(TList list, time_t date, TList end){
+    if(list->oldestTrip == 0 || difftime(list->oldestTrip, date) > 0){ //si la fecha a registrar es mas vieja, pasa a ser la oldest
+        list->oldestTrip = date;
+        list->oldestEnd = end->name;
+    }
+    return;
+}
+
+static void checkPop(TList list, size_t ntrips, TList end){
+    if( list->tripsPopularEnd <= ntrips){ //si es que son iguales tengo que verificar que sea alfabeticamente menor
+        int c;
+        if((c = strcasecmp(list->oldestEnd, end->name)) == 0){// si son el mismo tengo que sumar
+            list->tripsPopularEnd++;
+        }else if(c > 0 ){ //si viene antes alfabeticamente hay nuevo popular
+            list->popularEnd = end->name;
+            list->tripsPopularEnd = ntrips;
+        }
+    }
+    return;
+}
+
+int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int iminutes, int ihour, int iday, int imonth, int iyear, int isMember, int fminutes, int fhour, int fday, int fmonth, int fyear)
+{
     TList start, end;
     start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId);
     end = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, endId);
     if (start == NULL || end == NULL){
         return 0;
     }
-    struct tm date = mkTimeStruct(minutes, hour, day, month, year);
-    int ret = mktime(&date);
-    int wDay = date.tm_wday; //int con el numero del dia de la semana
+    struct tm dateStart = mkTimeStruct(iminutes, ihour, iday, imonth, iyear);
+    time_t startTimeValue = mktime(&dateStart);
+    int wDayStart = dateStart.tm_wday; //int con el numero del dia de la semana
+    struct tm dateEnd = mkTimeStruct(fminutes, fhour, fday, fmonth, fyear);
+    time_t startTimeValue = mktime(&dateStart);
+    int wDayEnd = dateStart.tm_wday;
+
+    countToDay(bikeRentalSystem->days, wDayStart, wDayEnd );
 
     int idxStart = start->idx; //consigo indices
     int idxEnd = end->idx;
@@ -170,10 +201,10 @@ int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int mi
     bikeRentalSystem->trips[idxStart][idxEnd]++; //sumo en la matriz
     start->memTrips+=isMember; 
     if(idxStart != idxEnd){ //si no es circular lo considero candidato para viaje mas antiguo y/o ruta mas popular
-        checkOldest(start, date, end);
+        checkOldest(start, startTimeValue, end);
         checkPop(start, bikeRentalSystem->trips[idxStart][idxEnd], end);
     }else{
-        int cMon = date.tm_mon;
+        int cMon = dateStart.tm_mon;
         countCircularTop(start, cMon);
     }
     return 1;
