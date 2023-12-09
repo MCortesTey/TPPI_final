@@ -25,11 +25,10 @@ typedef struct TStation * TList;
 typedef struct TNameId{
     int id;
     TList st;
-    size_t cirTrips;
 }TNameId;
 
 typedef struct TTopMonth{
-    TNameId top[TOP]; //top de estaciones ordenado
+    TList5 first; //top de estaciones ordenado
 }TTopMonth;
 
 typedef struct bikeRentalSystemCDT{
@@ -178,11 +177,33 @@ static void checkPop(TList list, size_t ntrips, TList end){
     return;
 }
 
+static TList5 circularRec(TList5 list, TList start){
+    if(list == NULL){ // caso esta vacio o llego al final
+        TList5 new = malloc(sizeof(Tquery5));
+        new->id = start->id;
+        new->st = start->name;
+        new->cirTrips = 0;
+        new->tail = list;
+        return new;
+    }
+    if(list->id == start->id){
+        list->cirTrips++;
+        
+    }
+    list->tail = circularRec(list->tail, start);
+    return list;
+}
+
 int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int iminutes, int ihour, int iday, int imonth, int iyear, int isMember, int fminutes, int fhour, int fday, int fmonth, int fyear)
 {
     TList start, end;
-    start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId);
-    end = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, endId);
+    if(startId == endId){ //si es viaje circular
+        start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId);
+        end = start;
+    } else{
+        start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId);
+        end = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, endId);
+    }
     if (start == NULL || end == NULL){
         return 0;
     }
@@ -205,7 +226,7 @@ int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int im
         checkPop(start, bikeRentalSystem->trips[idxStart][idxEnd], end);
     }else{
         int cMon = dateStart.tm_mon;
-        countCircularTop(start, cMon);
+        bikeRentalSystem->circularTrips[cMon].first = circularRec(bikeRentalSystem->circularTrips[cMon].first, start);
     }
     return 1;
 }

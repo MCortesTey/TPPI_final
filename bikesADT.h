@@ -43,6 +43,15 @@ typedef struct query4{
 
 typedef Tquery4 * TList4;
 
+typedef struct query5{
+    int id;
+    char* st;
+    size_t cirTrips;
+    struct query5 * tail;
+}Tquery5;
+
+typedef Tquery5 * TList5;
+
 typedef struct bikeRentalSystemCDT * bikeRentalSystemADT;
 
 // crea nuevo conjunto
