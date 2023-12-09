@@ -18,6 +18,7 @@
 void closeFilesHTML (  FILE *files[], int fileCount);//recive una lista de archivos y los cierra
 void closeFilesCSV (  FILE *files[], int fileCount);//recive una lista de archivos y los cierra
 void printHeaders( FILE *files1[], char* headers[], int fileCount); // Recive dos listas de archivos con el mismo largo y copia los mimos titulos en orden para cada archivo 
+FILE * newfileCSV(const char * fileName, char * header );// Recive el nombre del .CSV y los titulos y lo abre, si falla retorna null
 
 
 int main ( int cantArg, char* args[]){
@@ -38,11 +39,12 @@ FILE * files_data[] ={info, names};
 
 
 //CSV
-FILE * query1_CSV= fopen( "query1.csv","w");
-FILE * query2_CSV= fopen( "query2.csv","w");
-FILE * query3_CSV= fopen( "query3.csv","w");
-FILE * query4_CSV= fopen( "query4.csv","w");
-FILE * query5_CSV= fopen( "query5.csv","w");
+
+FILE * query1_CSV= newfileCSV( "query1.csv", HEADER1);
+FILE * query2_CSV= newfileCSV( "query2.csv",HEADER2);
+FILE * query3_CSV= newfileCSV( "query3.csv",HEADER3);
+FILE * query4_CSV= newfileCSV( "query4.csv",HEADER4);
+FILE * query5_CSV= newfileCSV( "query5.csv",HEADER5);
 FILE * files_CSV[]={query1_CSV,query2_CSV,query3_CSV,query4_CSV,query5_CSV};
 
 
@@ -55,6 +57,9 @@ htmlTable query5_HTML= newTable( "query5.html", );
 FILE * files_HTML[]={query1_HTML,query2_HTML,query3_HTML,query4_HTML,query5_HTML};
 
 //verfica que los archivos se hayan abierto sin errores
+
+
+//revisar si no estoy cerrando dos veces un archivo 
 for (int i= 0; i<COUNT_Q;i++){
     if ( files_data[0]==NULL || files_data[1] ==NULL ||  (files_CSV[i]==NULL)||(files_HTML[i]==NULL) )
        {
@@ -65,7 +70,6 @@ for (int i= 0; i<COUNT_Q;i++){
         exit(1);
        }
 }
-
 
 //Inicializacion del TAD
 bikeRentalSystemADT bikeRentalSystem=  newBikeRentalSystem(/*Falta pasar los anos*/) ;
@@ -84,8 +88,7 @@ if  ( bikeRentalSystem == NULL ||  errno == ENOMEM){
     /*HEADERS*/
 //Se imprimen los encabezados para cada archivo
 
-char* headers = {HEADER1,HEADER2, HEADER3, HEADER4, HEADER5};
-printHeaders(  files_CSV, headers, COUNT_Q);
+
 
 //Arrancamos el iterador 
 toBegin( newBikeRentalSystem);
@@ -95,7 +98,31 @@ return 0;
 }
 
 
+//Funcion que crea archivo nuevo de csv y verifica si se creo bien
+// se ingresan los headers  por parametro 
 
+
+
+FILE * newfileCSV(const char * fileName, char * header )
+{
+    errno = 0;
+    FILE * file = fopen(fileName, "w");
+    if ( file == NULL ) {
+	    return NULL;
+    }	    
+    if ( errno == ENOMEM ) {
+	    fclose(file);
+	    return NULL;
+    }
+    fprintf(fileName,"%s\n", header );
+    return file;
+}
+
+
+
+
+
+//Ya no la necesitamos 
 void printHeaders( FILE *files1[], char* headers[], int fileCount){
     for( int i=0;i<fileCount;i++){
         fprintf(files1[i], "%s\n", headers[i]);
@@ -111,7 +138,6 @@ void closeFilesCSV (  FILE *files[], int fileCount){
         }
     }
 }
-
 void closeFilesHTML (FILE *files[], int fileCount){
     for( int i=0;i<fileCount; i++)
     {
