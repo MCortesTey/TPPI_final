@@ -16,12 +16,6 @@ typedef struct query1 {
     struct query1 * tail;
 } Tquery1;
 
-typedef struct dayTrips
-{
-    size_t started;
-    size_t ended;
-} TDayTrips;
-
 typedef Tquery1 * TList1;
 
 typedef struct query2 {
@@ -33,6 +27,10 @@ typedef struct query2 {
 
 typedef Tquery2 * TList2;
 
+typedef struct dayTrips{
+    size_t started;
+    size_t ended;
+} TDayTrips;
 
 typedef struct query4{ 
     char* nameSt; // nombre estacion inicio
@@ -43,14 +41,11 @@ typedef struct query4{
 
 typedef Tquery4 * TList4;
 
-typedef struct query5{
-    int id;
-    char* st;
-    size_t cirTrips;
-    struct query5 * tail;
-}Tquery5;
-
-typedef Tquery5 * TList5;
+typedef struct monthSt{
+    char * FirstSt;
+    char * SecondSt;
+    char * ThirdSt;
+}TmonthSt;
 
 typedef struct bikeRentalSystemCDT * bikeRentalSystemADT;
 

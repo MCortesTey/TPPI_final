@@ -6,6 +6,9 @@
 #define DAYS 7
 #define MONTHS 12
 #define TOP 3
+#define FIRST 1
+#define SECOND 2
+#define THIRD 3
 #define CHECKMEMORY(ptr) if ( ptr == NULL ) { return NULL; }
 
 typedef struct TStation{
@@ -26,6 +29,15 @@ typedef struct TNameId{
     int id;
     TList st;
 }TNameId;
+
+typedef struct query5{
+    int id;
+    char* st;
+    size_t cirTrips;
+    struct query5 * tail;
+}Tquery5;
+
+typedef Tquery5 * TList5;
 
 typedef struct TTopMonth{
     TList5 first; //top de estaciones ordenado
@@ -316,6 +328,14 @@ TList1 query1 ( bikeRentalSystemADT bikeRentalSystem ){
     return query1;
 }
 
+void freeQuery1 ( TList1 list ){
+    if ( list == NULL ){
+        return;
+    }
+    freeQuery1(list->tail);
+    free(list);
+}
+
 // Query 2: Viaje mas antiguo por estación 
 // -orden alfabetico 
 // -no viajes circulares
@@ -350,6 +370,13 @@ TList2 query2( bikeRentalSystemADT bikeRentalSystem ){
     return ans;
 }
 
+void freeQuery2 ( TList2 list ){
+    if ( list == NULL ){
+        return;
+    }
+    freeQuery2 (list->tail);
+    free(list);
+}
 
 // Query 3:  Total viajes iniciados y finalizados por dia de la semana
 TDayTrips * query3(bikeRentalSystemADT bikeRentalSystem ){
@@ -362,6 +389,13 @@ TDayTrips * query3(bikeRentalSystemADT bikeRentalSystem ){
         ans[i].ended= bikeRentalSystem->days[i].ended;
     } 
     return ans;
+}
+
+void freeQuery3 ( TDayTrips * vec ){
+    for ( int i=0; i<DAYS ; i++ ){
+        free(vec[i]);
+    }
+    free(vec);
 }
 
 // Query 4: Ruta mas popular por estación
@@ -397,6 +431,48 @@ TList4 query4( bikeRentalSystemADT bikeRentalSystem){
     return ans;
 }
 
+void freeQuery4 ( TList4 list ){
+    if ( list == NULL ){
+        return;
+    }
+    freeQuery4(list->tail);
+    free(list);
+}
 
 
 // Query 5: Top 3 estaciones con mayor cantidad de viajes circulares por mes
+
+TmonthSt * query5 (bikeRentalSystemADT bikeRentalSystem ){
+    TmonthSt * ans = malloc(sizeof(TmonthSt) * MONTHS );
+    CHECKMEMORY(ans);
+    if ( errno == ENOMEM ) 
+        return NULL;
+    for (int i=0; i<MONTHS ; i++){
+        if ( bikeRentalSystem->circularTrips[i].dim >= 3){
+            ans[i].FirstSt = malloc (strlen(bikeRentalSystem->circularTrips[i].Top[FIRST]) + 1);
+            CHECKMEMORY(ans[i].FirstSt);
+            strcpy(ans[i].FirstSt, bikeRentalSystem->circularTrips[i].Top[FIRST]);
+
+            ans[i].SecondSt = malloc (strlen(bikeRentalSystem->circularTrips[i].Top[SECOND])+ 1);
+            CHECKMEMORY(ans[i].SecondSt);
+            strcpy (ans[i].SecondSt, bikeRentalSystem->circularTrips[i].Top[SECOND] );
+
+            ans[i].ThirdSt = malloc (strlen(bikeRentalSystem->circularTrips[i].Top[THIRD])+ 1);
+            CHECKMEMORY(ans[i].ThirdSt);
+            strcpy(ans[i].ThirdSt, bikeRentalSystem->circularTrips[i].Top[THIRD]);
+        }
+        ans[i].FirstSt = 0;
+        ans[i].SecondSt = 0;
+        ans[i].ThirdSt = 0;
+    }
+    return ans;
+}
+
+void freeQuery5 ( monthSt * vec ){
+    for ( int i=0; i<MONTH; i++ ){
+        free(vec[i].FirstSt);
+        free(vec[i].SecondSt);
+        free(vec[i].ThirdSt);
+    }
+    free(vec);
+}
