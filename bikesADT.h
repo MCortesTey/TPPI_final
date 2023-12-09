@@ -66,7 +66,7 @@ void toBegin (bikeRentalSystemADT bikeRentalSystem);
 int hasNext (bikeRentalSystemADT bikeRentalSystem);
 
 // apunta al siguiente elemento
-TList next (bikeRentalSystemADT bikeRentalSystem);
+void * next (bikeRentalSystemADT bikeRentalSystem);
 
 // libera el conjunto
 void freebikeRentalSystem ( bikeRentalSystemADT bikeRentalSystem );
@@ -79,6 +79,8 @@ size_t getMemTrips ( bikeRentalSystemADT bikeRentalSystem );
 
 // retorna indice correspondiente a la estacion donde iter apunta, en la matriz de trips
 size_t getIdx ( bikeRentalSystemADT bikeRentalSystem );
+
+char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem );
 
 TList1 query1( bikeRentalSystemADT bikeRentalSystem );
 

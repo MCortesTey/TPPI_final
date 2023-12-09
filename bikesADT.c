@@ -227,9 +227,10 @@ int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int im
     }
     struct tm dateStart = mkTimeStruct(iminutes, ihour, iday, imonth, iyear);
     time_t startTimeValue = mktime(&dateStart);
-    int wDayStart = dateStart.tm_wday; //int con el numero del dia de la semana
+    int wDayStart = dateStart.tm_wday; // int con el numero del dia de la semana
+
     struct tm dateEnd = mkTimeStruct(fminutes, fhour, fday, fmonth, fyear);
-    time_t startTimeValue = mktime(&dateStart);
+    time_t endTimeValue = mktime(&dateEnd);
     int wDayEnd = dateStart.tm_wday;
 
     countToDay(bikeRentalSystem->days, wDayStart, wDayEnd );
@@ -258,7 +259,7 @@ int hasNext (bikeRentalSystemADT bikeRentalSystem) {
     return bikeRentalSystem->iter != NULL;
 }
 
-TList next (bikeRentalSystemADT bikeRentalSystem) {
+void* next (bikeRentalSystemADT bikeRentalSystem) {
     if ( ! hasNext(bikeRentalSystem) ){
         return NULL;
     }
@@ -426,7 +427,7 @@ TList4 query4( bikeRentalSystemADT bikeRentalSystem){
         ans->nameSt= copyStr( getName( bikeRentalSystem));
         CHECKMEMORY( ans->nameSt);
         ans->nameEnd= copyStr(  getPopularEnd( bikeRentalSystem) );
-        CHECHMEMORY( ans->nameEnd);
+        CHECKMEMORY( ans->nameEnd);
         ans->countTrips= bikeRentalSystem->iter->tripsPopularEnd;
         ans=ans->tail;
         next( bikeRentalSystem);
