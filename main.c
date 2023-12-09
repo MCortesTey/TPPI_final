@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include "bikesADT.h"
+#include "htmlTable.h"
 
 #define HEADER1"bikeStation;memberTrips;casualTrips;allTrips"
 #define HEADER2"bikeStation;bikeEndStation;oldestDateTime"
@@ -14,7 +15,9 @@
 #define FILES_PARAMETERS 2 //Cant archivos que hay que leer 
 
 
-void closeFiles (  FILE * files[], int fileCount);
+void closeFilesHTML (  FILE *files[], int fileCount);//recive una lista de archivos y los cierra
+void closeFilesCSV (  FILE *files[], int fileCount);//recive una lista de archivos y los cierra
+void printHeaders( FILE *files1[], char* headers[], int fileCount); // Recive dos listas de archivos con el mismo largo y copia los mimos titulos en orden para cada archivo 
 
 
 int main ( int cantArg, char* args[]){
@@ -26,6 +29,7 @@ int main ( int cantArg, char* args[]){
     }
 
 /*INICIALIZACION */
+
 
 
 FILE * info  = fopen( args[1], "r");// archivo de alguileres
@@ -41,12 +45,13 @@ FILE * query4_CSV= fopen( "query4.csv","w");
 FILE * query5_CSV= fopen( "query5.csv","w");
 FILE * files_CSV[]={query1_CSV,query2_CSV,query3_CSV,query4_CSV,query5_CSV};
 
-//HTML
-FILE * query1_HTML= fopen( "query1.html","w");
-FILE * query2_HTML= fopen( "query2.html","w");
-FILE * query3_HTML= fopen( "query3.html","w");
-FILE * query4_HTML= fopen( "query4.html","w");
-FILE * query5_HTML= fopen( "query5.html","w");
+
+//FALTA VER COMO PONER  LOS NOMBRES DE LAS COLUMNAS ( EL PARAMENTRO RESTANTE)
+htmlTable query1_HTML= newTable( "query1.html",  );
+htmlTable query2_HTML= newTable( "query2.html", );
+htmlTable query3_HTML= newTable( "query3.html", );
+htmlTable query4_HTML= newTable( "query4.html", );
+htmlTable query5_HTML= newTable( "query5.html", );
 FILE * files_HTML[]={query1_HTML,query2_HTML,query3_HTML,query4_HTML,query5_HTML};
 
 //verfica que los archivos se hayan abierto sin errores
@@ -54,50 +59,51 @@ for (int i= 0; i<COUNT_Q;i++){
     if ( files_data[0]==NULL || files_data[1] ==NULL ||  (files_CSV[i]==NULL)||(files_HTML[i]==NULL) )
        {
         closeFiles( files_CSV, COUNT_Q);
-        closeFiles( files_HTML, COUNT_Q);
+        closeHTMLFiles( files_HTML, COUNT_Q);
         closeFiles( files_data, FILES_PARAMETERS );
-        fprintf( stderr, "ERROR in openning file")
+        fprintf( stderr, "ERROR in openning file");
         exit(1);
        }
 }
 
+
 //Inicializacion del TAD
-bikeRentalSystemADT rentalSystem=  newBikeRentalSystem() ;
+bikeRentalSystemADT bikeRentalSystem=  newBikeRentalSystem(/*Falta pasar los anos*/) ;
 
 //en el casode ocurrir un error ( como  no hallar memoria para crear el tad), notificamos al usuario 
 
-if  ( rentalSystem == NULL ||  errno == ENOMEM){
-        fprintf( stderr, "ERROR memory unavailable")
+if  ( bikeRentalSystem == NULL ||  errno == ENOMEM){
+        fprintf( stderr, "ERROR memory unavailable");
         closeFiles( files_CSV, COUNT_Q);
-        closeFiles( files_HTML, COUNT_Q);
+        closeHTMLFiles( files_HTML, COUNT_Q);
         closeFiles( files_data,FILES_PARAMETERS );
         exit(1); //verificar si va el 1 u una macro asociada al error 
 }
 
 
-
-
-
-
-
-
     /*HEADERS*/
 //Se imprimen los encabezados para cada archivo
-fprintf(query1, "%s\n", HEADER1 );
-fprintf(query2, "%s\n", HEADER2 );
-fprintf(query3, "%s\n", HEADER3 );
-fprintf(query4, "%s\n", HEADER4 );
-fprintf(query5, "%s\n", HEADER5 );
+
+char* headers = {HEADER1,HEADER2, HEADER3, HEADER4, HEADER5};
+printHeaders(  files_CSV, headers, COUNT_Q);
+
+//Arrancamos el iterador 
+toBegin( newBikeRentalSystem);
+
 
 return 0;
 }
 
 
 
+void printHeaders( FILE *files1[], char* headers[], int fileCount){
+    for( int i=0;i<fileCount;i++){
+        fprintf(files1[i], "%s\n", headers[i]);
+    }
 
-
-void closeFiles (  FILE * files[], int fileCount){
-    for( int i=0;i<fileCount, i++)
+}
+void closeFilesCSV (  FILE *files[], int fileCount){
+    for( int i=0;i<fileCount; i++)
     {
         if ( files[i]!=NULL )
         {
@@ -105,6 +111,17 @@ void closeFiles (  FILE * files[], int fileCount){
         }
     }
 }
+
+void closeFilesHTML (FILE *files[], int fileCount){
+    for( int i=0;i<fileCount; i++)
+    {
+        if ( files[i]!=NULL )
+        {
+            closeHTMLTable( files[i]);
+        }
+    }
+}
+
 
 
 
