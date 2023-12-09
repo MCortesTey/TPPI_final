@@ -6,9 +6,6 @@
 #define DAYS 7
 #define MONTHS 12
 #define TOP 3
-#define FIRST 1
-#define SECOND 2
-#define THIRD 3
 #define CHECKMEMORY(ptr) if ( ptr == NULL ) { return NULL; }
 
 typedef struct TStation{
@@ -28,6 +25,7 @@ typedef struct TStation * TList;
 typedef struct TNameId{
     int id;
     TList st;
+    size_t cirTrips;
 }TNameId;
 
 typedef struct query5{
@@ -40,7 +38,8 @@ typedef struct query5{
 typedef Tquery5 * TList5;
 
 typedef struct TTopMonth{
-    TList5 first; //top de estaciones ordenado
+    TNameId * Top; //top de estaciones ordenado
+    size_t dim;
 }TTopMonth;
 
 typedef struct bikeRentalSystemCDT{
@@ -63,24 +62,37 @@ bikeRentalSystemADT newBikeRentalSystem ( int minYear, int maxYear ){
     return new;
 }
 
-static int qcmp(const void *e1, const void *e2)
-{
+static int idCmp(const void *e1, const void *e2){
     const TNameId *ptr1 = (const TNameId *)e1;
     const TNameId *ptr2 = (const TNameId *)e2;
     return (ptr1->id - ptr2->id);
 }
 
-static void updateIds(TNameId *arr, size_t dim, TList save){
+static int cirCmp(const void *e1, const void *e2){
+    const TNameId *ptr1 = (const TNameId *)e1;
+    const TNameId *ptr2 = (const TNameId *)e2;
+    return (ptr1->cirTrips - ptr2->cirTrips);
+}
+static void updateArr(TNameId *arr, size_t dim, TList save, int cir){
     arr = realloc(arr, sizeof(TNameId) * dim );
     arr[dim-1].id = save->id;
-    arr[dim-1].st = save->name; 
-    qsort(arr, dim, sizeof(TNameId), qcmp);
+    arr[dim-1].st = save->name;
+    if(cir){
+        arr[dim-1].cirTrips ++;
+        qsort(arr, dim, sizeof(TNameId), cirCmp);
+    }else{
+        qsort(arr, dim, sizeof(TNameId), idCmp);
+    }
+    return;
 }
 
-static TList binarySearch(TNameId *arr, int low, int high, int id){ // funcion para buscar la st por el ID de forma eficiente
+static TList binarySearch(TNameId *arr, int low, int high, int id, int cir){ // funcion para buscar la st por el ID de forma eficiente
     while (low <= high){
         int mid = low + (high - low) / 2;
         if (arr[mid].id == id){
+            if(cir){
+                arr[mid].cirTrips++;
+            }
             return arr[mid].st;
         }
         if (arr[mid].id < id){
@@ -146,7 +158,7 @@ int addStation(bikeRentalSystemADT bikeRentalSystem, char *name, int id){
     if (added){
         bikeRentalSystem->dim++;
         enlargeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim);
-        updateIds(bikeRentalSystem->ids, bikeRentalSystem->dim, save);
+        updateArr(bikeRentalSystem->ids, bikeRentalSystem->dim, save, 0);
     }
     return added;
 }
@@ -189,32 +201,26 @@ static void checkPop(TList list, size_t ntrips, TList end){
     return;
 }
 
-static TList5 circularRec(TList5 list, TList start){
-    if(list == NULL){ // caso esta vacio o llego al final
-        TList5 new = malloc(sizeof(Tquery5));
-        new->id = start->id;
-        new->st = start->name;
-        new->cirTrips = 0;
-        new->tail = list;
-        return new;
+static void countCircularTop(TTopMonth mon, TList start){
+    TList aux = binarySearch(mon.Top, 0, mon.dim-1, start->id, 1); //busco si ya es candidato en el mes
+    if (aux != NULL){ //en caso de que estuviera solo ordeno
+        qsort(mon.Top, mon.dim, sizeof(TNameId), cirCmp);
+        return;
     }
-    if(list->id == start->id){
-        list->cirTrips++;
-        
-    }
-    list->tail = circularRec(list->tail, start);
-    return list;
+    mon.dim++;
+    updateArr(mon.Top, mon.dim, start, 1);
+    return ;
 }
 
 int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int iminutes, int ihour, int iday, int imonth, int iyear, int isMember, int fminutes, int fhour, int fday, int fmonth, int fyear)
 {
     TList start, end;
     if(startId == endId){ //si es viaje circular
-        start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId);
+        start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
         end = start;
     } else{
-        start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId);
-        end = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, endId);
+        start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
+        end = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, endId, 0);
     }
     if (start == NULL || end == NULL){
         return 0;
@@ -238,7 +244,7 @@ int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int im
         checkPop(start, bikeRentalSystem->trips[idxStart][idxEnd], end);
     }else{
         int cMon = dateStart.tm_mon;
-        bikeRentalSystem->circularTrips[cMon].first = circularRec(bikeRentalSystem->circularTrips[cMon].first, start);
+        countCircularTop(bikeRentalSystem->circularTrips[cMon], start);
     }
     return 1;
 }
@@ -392,9 +398,6 @@ TDayTrips * query3(bikeRentalSystemADT bikeRentalSystem ){
 }
 
 void freeQuery3 ( TDayTrips * vec ){
-    for ( int i=0; i<DAYS ; i++ ){
-        free(vec[i]);
-    }
     free(vec);
 }
 
@@ -449,27 +452,28 @@ TmonthSt * query5 (bikeRentalSystemADT bikeRentalSystem ){
         return NULL;
     for (int i=0; i<MONTHS ; i++){
         if ( bikeRentalSystem->circularTrips[i].dim >= 3){
-            ans[i].FirstSt = malloc (strlen(bikeRentalSystem->circularTrips[i].Top[FIRST]) + 1);
+            ans[i].FirstSt = malloc (strlen(bikeRentalSystem->circularTrips[i].Top[0].st->name) + 1);
             CHECKMEMORY(ans[i].FirstSt);
-            strcpy(ans[i].FirstSt, bikeRentalSystem->circularTrips[i].Top[FIRST]);
+            strcpy(ans[i].FirstSt, bikeRentalSystem->circularTrips[i].Top[0].st->name);
 
-            ans[i].SecondSt = malloc (strlen(bikeRentalSystem->circularTrips[i].Top[SECOND])+ 1);
+            ans[i].SecondSt = malloc(strlen(bikeRentalSystem->circularTrips[i].Top[1].st->name) + 1);
             CHECKMEMORY(ans[i].SecondSt);
-            strcpy (ans[i].SecondSt, bikeRentalSystem->circularTrips[i].Top[SECOND] );
+            strcpy(ans[i].SecondSt, bikeRentalSystem->circularTrips[i].Top[1].st->name);
 
-            ans[i].ThirdSt = malloc (strlen(bikeRentalSystem->circularTrips[i].Top[THIRD])+ 1);
+            ans[i].ThirdSt = malloc(strlen(bikeRentalSystem->circularTrips[i].Top[2].st->name) + 1);
             CHECKMEMORY(ans[i].ThirdSt);
-            strcpy(ans[i].ThirdSt, bikeRentalSystem->circularTrips[i].Top[THIRD]);
+            strcpy(ans[i].ThirdSt, bikeRentalSystem->circularTrips[i].Top[2].st->name);
+        } else{
+            ans[i].FirstSt = 0;
+            ans[i].SecondSt = 0;
+            ans[i].ThirdSt = 0;
         }
-        ans[i].FirstSt = 0;
-        ans[i].SecondSt = 0;
-        ans[i].ThirdSt = 0;
     }
     return ans;
 }
 
-void freeQuery5 ( monthSt * vec ){
-    for ( int i=0; i<MONTH; i++ ){
+void freeQuery5 ( TmonthSt * vec ){
+    for ( int i=0; i<MONTHS; i++ ){
         free(vec[i].FirstSt);
         free(vec[i].SecondSt);
         free(vec[i].ThirdSt);
