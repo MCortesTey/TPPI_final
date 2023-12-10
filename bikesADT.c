@@ -73,17 +73,18 @@ static int cirCmp(const void *e1, const void *e2){
     const TNameId *ptr2 = (const TNameId *)e2;
     return (ptr1->cirTrips - ptr2->cirTrips);
 }
-static void updateArr(TNameId *arr, size_t dim, TList save, int cir){
-    arr = realloc(arr, sizeof(TNameId) * dim );
-    arr[dim-1].id = save->id;
-    arr[dim-1].st = save->name;
-    if(cir){
-        arr[dim-1].cirTrips ++;
+static TNameId *updateArr(TNameId *arr, size_t dim, TList save, int cir){
+    arr = realloc(arr, sizeof(TNameId) * dim);
+    arr[dim - 1].id = save->id;
+    arr[dim - 1].st = save;
+    if (cir){
+        arr[dim - 1].cirTrips++;
         qsort(arr, dim, sizeof(TNameId), cirCmp);
-    }else{
+    }
+    else{
         qsort(arr, dim, sizeof(TNameId), idCmp);
     }
-    return;
+    return arr;
 }
 
 static TList binarySearch(TNameId *arr, int low, int high, int id, int cir){ // funcion para buscar la st por el ID de forma eficiente
@@ -148,8 +149,9 @@ static TList addStationRec(TList list, char *name, int id, int *added, int idx, 
         if (new == NULL || errno == ENOMEM){
             return NULL; // por ahi seria mejor tener una flag auxiliar para marcar errores
         }
-        new->name = malloc(sizeof(char) * (strlen(name) + 1));
-        strcpy(new->name, name);
+        // new->name = malloc(sizeof(char) * (strlen(name) + 1));
+        // strcpy(new->name, name);
+        new->name = name;
         new->id = id;
         new->idx = idx;
         new->memTrips = 0;
@@ -175,7 +177,7 @@ int addStation(bikeRentalSystemADT bikeRentalSystem, char *name, int id){
     if (added){
         int old_dim = bikeRentalSystem->dim++;
         bikeRentalSystem->trips = enlargeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim, old_dim);
-        updateArr(bikeRentalSystem->ids, bikeRentalSystem->dim, save, 0);
+        bikeRentalSystem->ids = updateArr(bikeRentalSystem->ids, bikeRentalSystem->dim, save, 0);
     }
     return added;
 }
@@ -225,7 +227,7 @@ static void countCircularTop(TTopMonth mon, TList start){
         return;
     }
     mon.dim++;
-    updateArr(mon.Top, mon.dim, start, 1);
+    mon.Top = updateArr(mon.Top, mon.dim, start, 1);
     return ;
 }
 
@@ -497,4 +499,22 @@ void freeQuery5 ( TmonthSt * vec ){
         free(vec[i].ThirdSt);
     }
     free(vec);
+}
+
+static void freeStations(TList list)
+{
+    if (list == NULL)
+    {
+        return;
+    }
+    freeStations(list->tail);
+    free(list);
+}
+
+void freeBikeRentalSystem(bikeRentalSystemADT bikeRentalSystem)
+{
+    freeStations(bikeRentalSystem->first);
+    freeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim);
+    free(bikeRentalSystem->ids);
+    free(bikeRentalSystem);
 }
