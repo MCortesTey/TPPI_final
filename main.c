@@ -60,20 +60,6 @@ FILE * files_HTML[]={query1_HTML,query2_HTML,query3_HTML,query4_HTML,query5_HTML
 //verfica que los archivos se hayan abierto sin errores
 //?
 
-// query1
-TList1 q1 = query1(bikeRentalSystem);
-
-while ( q1 ){
-    fprintf ( query1_CSV, "%s;%ld;%ld;%ld\n" , q1->name, q1->cantMem, q1->cantCas, q1->cantTot);
-
-    sprintf (stringMem, "%ld", q1->cantMem );
-    sprintf (stringCas, "%ld", q1->cantCas );
-    sprintf (stringTot, "%ld", q1->cantTot );
-
-    addHTMLRow(files_HTML[FIRST], q1->name, stringMem, stringCas, stringTot );
-    q1 = q1->tail;
-}
-
 
 //revisar si no estoy cerrando dos veces un archivo 
 for (int i= 0; i<COUNT_Q;i++){
@@ -107,6 +93,44 @@ if  ( bikeRentalSystem == NULL ||  errno == ENOMEM){
 
 //Arrancamos el iterador 
 toBegin( newBikeRentalSystem);
+
+
+// query1
+TList1 q1 = query1(bikeRentalSystem);
+
+while ( q1 ){
+    fprintf ( query1_CSV, "%s;%ld;%ld;%ld\n" , q1->name, q1->cantMem, q1->cantCas, q1->cantTot);
+
+    sprintf (stringMem, "%ld", q1->cantMem );
+    sprintf (stringCas, "%ld", q1->cantCas );
+    sprintf (stringTot, "%ld", q1->cantTot );
+
+    addHTMLRow(files_HTML[FIRST], q1->name, stringMem, stringCas, stringTot );
+    q1 = q1->tail;
+}
+
+
+//query2 
+TList2 q2 = query2( bikeRentalSystem);
+
+while ( q2){
+    fprintf( files_CSV[2],"%s;%s;%s\n" ,q2->nameSt, q2->nameEnd,/*hay que ver como pasar el q2->oldesttime a strn*/);
+    addHTMLRow  ( files_HTML[2],3/*habria que poner macro?*/,q2->nameSt, q2->nameEnd,/*hay que ver como pasar el q2->oldesttime a strn*/ );
+    q2=q2->tail;
+}
+
+
+
+//query3
+TDayTrips * q3= query3( bikeRentalSystem);
+char* days[]={"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday","Sunday"};
+for ( int i=0;i<DAYS;i++){
+    fprint( files_CSV[3]"%s;%ld;%ld";,days[i], q3[i].started, q3[i].ended);
+    sprintf (stringStart, "%ld",q3[i].started);
+    sprintf (stringEnd, "%ld", q3[i].ended);
+    addHTMLRow( files_HTML[3],days[i],stringStart,stringEnd );
+
+}
 
 
 return 0;
