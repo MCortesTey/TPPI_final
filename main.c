@@ -13,6 +13,7 @@
 #define DELIMIT ";"
 #define COUNT_Q 5 //cantidad de queries 
 #define FILES_PARAMETERS 2 //Cant archivos que hay que leer 
+#define FIRST 1
 
 
 void closeFilesHTML (  FILE *files[], int fileCount);//recive una lista de archivos y los cierra
@@ -49,14 +50,29 @@ FILE * files_CSV[]={query1_CSV,query2_CSV,query3_CSV,query4_CSV,query5_CSV};
 
 
 //FALTA VER COMO PONER  LOS NOMBRES DE LAS COLUMNAS ( EL PARAMENTRO RESTANTE)
-htmlTable query1_HTML= newTable( "query1.html",  );
-htmlTable query2_HTML= newTable( "query2.html", );
-htmlTable query3_HTML= newTable( "query3.html", );
-htmlTable query4_HTML= newTable( "query4.html", );
-htmlTable query5_HTML= newTable( "query5.html", );
+htmlTable query1_HTML= newTable( "query1.html", 4, "bikeStation", "memberTrips", "casualTrips", "allTrips" );
+htmlTable query2_HTML= newTable( "query2.html", 3, "bikeStation" , "bikeEndStation", "oldestDateTime" );
+htmlTable query3_HTML= newTable( "query3.html", 3, "weekDay", "startedTrips", "endedTrips" );
+htmlTable query4_HTML= newTable( "query4.html", 4, "bikeStation", "mostPopRouteEndStation", "mostPopRouteTrips" );
+htmlTable query5_HTML= newTable( "query5.html", 4, "month", "loopsTop1St", "loopsTop2St", "loopsTop3St");
 FILE * files_HTML[]={query1_HTML,query2_HTML,query3_HTML,query4_HTML,query5_HTML};
 
 //verfica que los archivos se hayan abierto sin errores
+?
+
+// query1
+TList1 q1 = query1(bikeRentalSystem);
+
+while ( q1 ){
+    fprintf ( query1_CSV, "%s;%ld;%ld;%ld\n" , q1->name, q1->cantMem, q1->cantCas, q1->cantTot);
+
+    sprintf (stringMem, "%ld", q1->cantMem );
+    sprintf (stringCas, "%ld", q1->cantCas );
+    sprintf (stringTot, "%ld", q1->cantTot );
+
+    addHTMLRow(files_HTML[FIRST], q1->name, stringMem, stringCas, stringTot );
+    q1 = q1->tail;
+}
 
 
 //revisar si no estoy cerrando dos veces un archivo 
