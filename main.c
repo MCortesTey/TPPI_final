@@ -58,7 +58,7 @@ htmlTable query5_HTML= newTable( "query5.html", 4, "month", "loopsTop1St", "loop
 FILE * files_HTML[]={query1_HTML,query2_HTML,query3_HTML,query4_HTML,query5_HTML};
 
 //verfica que los archivos se hayan abierto sin errores
-?
+//?
 
 // query1
 TList1 q1 = query1(bikeRentalSystem);
@@ -77,8 +77,7 @@ while ( q1 ){
 
 //revisar si no estoy cerrando dos veces un archivo 
 for (int i= 0; i<COUNT_Q;i++){
-    if ( files_data[0]==NULL || files_data[1] ==NULL ||  (files_CSV[i]==NULL)||(files_HTML[i]==NULL) )
-       {
+    if ( files_data[0]==NULL || files_data[1] ==NULL ||  (files_CSV[i]==NULL)||(files_HTML[i]==NULL) ){
         closeFiles( files_CSV, COUNT_Q);
         closeHTMLFiles( files_HTML, COUNT_Q);
         closeFiles( files_data, FILES_PARAMETERS );

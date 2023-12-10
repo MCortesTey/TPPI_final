@@ -105,23 +105,39 @@ static TList binarySearch(TNameId *arr, int low, int high, int id, int cir){ // 
     return NULL;
 }
 
-static void enlargeTrips(size_t **trips, size_t dim){
+size_t **enlargeTrips(size_t **trips, const size_t dim, size_t old_dim){
     errno = 0;
-    int i, j;
-    trips = realloc(trips, dim * sizeof(size_t *)); // reservo memoria para una fila mas
-    if (errno == ENOMEM){
-        return 1;
+    size_t **resized = calloc(dim, sizeof(size_t*));
+
+    if (resized == NULL || errno == ENOMEM){
+        return NULL; // seria mejor devolverlo en una flag
     }
-    for (j = 0; j < dim; j++){ // lleno de 0 la nueva fila
-        trips[dim - 1][j] = 0;
-    }
-    for (i = 0; i < dim; i++){
-        trips[i] = realloc(trips[i], sizeof(size_t) * dim); // reservo y agrego una columna mas al final de cada fila
-        if (errno == ENOMEM){
-            return 1;
+    for (int i = 0; i < dim; i++){
+        resized[i] = malloc(dim * sizeof(size_t **));
+        if (resized[i] == NULL || errno == ENOMEM){
+            return NULL;
         }
-        trips[i][dim - 1] = 0; // lleno de 0
+        if (i < old_dim){
+            for (int j = 0; j < old_dim; j++){
+                resized[i][j] = trips[i][j];
+            }
+            for (int j = old_dim; j < dim; i++){
+                resized[i][j] = 0;
+            }
+        }else{
+            for (int j = 0; i < dim; i++){
+                resized[i][j] = 0;
+            }
+        }
     }
+
+    // Libero la memoria de la matriz vieja
+    for (size_t i = 0; i < old_dim; i++){
+        free(trips[i]);
+    }
+    free(trips);
+
+    return resized;
 }
 
 static TList addStationRec(TList list, char *name, int id, int *added, int idx, TList save){
@@ -141,6 +157,7 @@ static TList addStationRec(TList list, char *name, int id, int *added, int idx, 
         new->tripsPopularEnd = 0;
         new->tail = list;
         save = new;
+        (*added) = 1;
         return new;
     }
     if (c == 0){
@@ -156,8 +173,8 @@ int addStation(bikeRentalSystemADT bikeRentalSystem, char *name, int id){
     TList save;
     bikeRentalSystem->first = addStationRec(bikeRentalSystem->first, name, id, &added, cant, save);
     if (added){
-        bikeRentalSystem->dim++;
-        enlargeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim);
+        int old_dim = bikeRentalSystem->dim++;
+        bikeRentalSystem->trips = enlargeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim, old_dim);
         updateArr(bikeRentalSystem->ids, bikeRentalSystem->dim, save, 0);
     }
     return added;
@@ -259,7 +276,7 @@ int hasNext (bikeRentalSystemADT bikeRentalSystem) {
     return bikeRentalSystem->iter != NULL;
 }
 
-void* next (bikeRentalSystemADT bikeRentalSystem) {
+void * next (bikeRentalSystemADT bikeRentalSystem) {
     if ( ! hasNext(bikeRentalSystem) ){
         return NULL;
     }
