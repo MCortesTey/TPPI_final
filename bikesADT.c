@@ -7,6 +7,7 @@
 #define MONTHS 12
 #define TOP 3
 #define CHECKMEMORY(ptr) if ( ptr == NULL ) { return NULL; }
+#define SECONDSINAMONTH 30*24*60*60
 
 typedef struct TStation{
     char * name;
@@ -141,7 +142,7 @@ size_t **enlargeTrips(size_t **trips, const size_t dim, size_t old_dim){
     return resized;
 }
 
-static TList addStationRec(TList list, char *name, int id, int *added, int idx, TList save){
+static TList addStationRec(TList list, char *name, int id, int *added, int idx, TList * save){
     int c;
     if (list == NULL || (c = strcasecmp(list->name, name)) > 0){
         errno = 0;
@@ -158,14 +159,14 @@ static TList addStationRec(TList list, char *name, int id, int *added, int idx, 
         new->oldestTrip = 0;// no estoy seguro como se inicializa aun
         new->tripsPopularEnd = 0;
         new->tail = list;
-        save = new;
+        (*save) = new;
         (*added) = 1;
         return new;
     }
     if (c == 0){
         return list;
     }
-    list->tail = addStationRec(list->tail, name, id, added, idx, save);
+    list->tail = addStationRec(list->tail, name, id, added, idx, &save);
     return list;
 }
 
@@ -220,15 +221,19 @@ static void checkPop(TList list, size_t ntrips, TList end){
     return;
 }
 
-static void countCircularTop(TTopMonth mon, TList start){
-    TList aux = binarySearch(mon.Top, 0, mon.dim-1, start->id, 1); //busco si ya es candidato en el mes
-    if (aux != NULL){ //en caso de que estuviera solo ordeno
+static TTopMonth countCircularTop(TTopMonth mon, TList start)
+{
+    TList aux = binarySearch(mon.Top, 0, mon.dim - 1, start->id, 1); // busco si ya es candidato en el mes
+    if (aux != NULL)
+    { // en caso de que estuviera solo ordeno
         qsort(mon.Top, mon.dim, sizeof(TNameId), cirCmp);
-        return;
     }
-    mon.dim++;
-    mon.Top = updateArr(mon.Top, mon.dim, start, 1);
-    return ;
+    else
+    {
+        mon.dim++;
+        mon.Top = updateArr(mon.Top, mon.dim, start, 1);
+    }
+    return mon;
 }
 
 int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int iminutes, int ihour, int iday, int imonth, int iyear, int isMember, int fminutes, int fhour, int fday, int fmonth, int fyear)
@@ -262,9 +267,10 @@ int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int im
     if(idxStart != idxEnd){ //si no es circular lo considero candidato para viaje mas antiguo y/o ruta mas popular
         checkOldest(start, startTimeValue, end);
         checkPop(start, bikeRentalSystem->trips[idxStart][idxEnd], end);
-    }else{
+    }
+    else if(difftime(endTimeValue, startTimeValue) > SECONDSINAMONTH){
         int cMon = dateStart.tm_mon;
-        countCircularTop(bikeRentalSystem->circularTrips[cMon], start);
+        bikeRentalSystem->circularTrips[cMon] = countCircularTop(bikeRentalSystem->circularTrips[cMon], start);
     }
     return 1;
 }
@@ -511,10 +517,19 @@ static void freeStations(TList list)
     free(list);
 }
 
+static void freeMonths(TTopMonth *months)
+{
+    for (int i = 0; i < MONTHS; i++)
+    {
+        free(months[i].Top);
+    }
+}
+
 void freeBikeRentalSystem(bikeRentalSystemADT bikeRentalSystem)
 {
     freeStations(bikeRentalSystem->first);
     freeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim);
+    freeMonths(bikeRentalSystem->circularTrips);
     free(bikeRentalSystem->ids);
     free(bikeRentalSystem);
 }
