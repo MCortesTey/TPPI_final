@@ -13,7 +13,10 @@
 #define DELIMIT ";"
 #define COUNT_Q 5 //cantidad de queries 
 #define FILES_PARAMETERS 2 //Cant archivos que hay que leer 
-#define FIRST 1
+#define MIN_YEAR
+#define MAX_YEAR
+
+enum position { FIRST=0, SECOND, THIRD, FOURTH, FIFTH };
 
 
 void closeFilesHTML (  FILE *files[], int fileCount);//recive una lista de archivos y los cierra
@@ -24,11 +27,27 @@ FILE * newfileCSV(const char * fileName, char * header );// Recive el nombre del
 
 int main ( int cantArg, char* args[]){
     //La cantidad de parametros tiene que ser tres ya que es el programa[0], el path al primer .csv[1], y el path al segundo .csv[2]
-    if ( cantArg !=3)
-    {
+    if ( cantArg > 5 || cantArg < 3 ){
         fprintf( stderr, "ERROR invalid amount of parameters");
         exit(1);
     }
+    int beginYear = 0, endYear = 0;
+    if ( cantArg < 4 ){
+        beginYear = MIN_YEAR;
+        endYear = MAX_YEAR;
+    } else if ( cantArg == 4 ){
+        beginYear = atoi(args[3]);
+        endYear = MAX_YEAR;
+    } else if ( cantArg == 5 ){
+        beginYear = atoi(args[3]);
+        endYear = atoi(args[4]);
+
+        if ( beginYear > endYear ){
+            fprintf(stderr, "\nError: Year2<Year1\n");
+            return 1;
+        }
+    }
+
 
 /*INICIALIZACION */
 
@@ -99,7 +118,7 @@ toBegin( newBikeRentalSystem);
 TList1 q1 = query1(bikeRentalSystem);
 
 while ( q1 ){
-    fprintf ( query1_CSV, "%s;%ld;%ld;%ld\n" , q1->name, q1->cantMem, q1->cantCas, q1->cantTot);
+    fprintf ( files_CSV[FIRST], "%s;%ld;%ld;%ld\n" , q1->name, q1->cantMem, q1->cantCas, q1->cantTot);
 
     sprintf (stringMem, "%ld", q1->cantMem );
     sprintf (stringCas, "%ld", q1->cantCas );
@@ -109,29 +128,43 @@ while ( q1 ){
     q1 = q1->tail;
 }
 
-
 //query2 
 TList2 q2 = query2( bikeRentalSystem);
 
 while ( q2){
-    fprintf( files_CSV[2],"%s;%s;%s\n" ,q2->nameSt, q2->nameEnd,/*hay que ver como pasar el q2->oldesttime a strn*/);
-    addHTMLRow  ( files_HTML[2],3/*habria que poner macro?*/,q2->nameSt, q2->nameEnd,/*hay que ver como pasar el q2->oldesttime a strn*/ );
+    fprintf( files_CSV[SECOND],"%s;%s;%s\n" ,q2->nameSt, q2->nameEnd,/*hay que ver como pasar el q2->oldesttime a strn*/);
+    addHTMLRow  ( files_HTML[SECOND],3/*habria que poner macro?*/,q2->nameSt, q2->nameEnd,/*hay que ver como pasar el q2->oldesttime a strn*/ );
     q2=q2->tail;
 }
-
-
 
 //query3
 TDayTrips * q3= query3( bikeRentalSystem);
 char* days[]={"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday","Sunday"};
 for ( int i=0;i<DAYS;i++){
-    fprint( files_CSV[3]"%s;%ld;%ld";,days[i], q3[i].started, q3[i].ended);
+    fprint( files_CSV[THIRD], "%s;%ld;%ld\n", days[i], q3[i].started, q3[i].ended);
     sprintf (stringStart, "%ld",q3[i].started);
     sprintf (stringEnd, "%ld", q3[i].ended);
-    addHTMLRow( files_HTML[3],days[i],stringStart,stringEnd );
+    addHTMLRow( files_HTML[THIRD],days[i],stringStart,stringEnd );
 
 }
 
+// query4 
+TList4 q4 = query4 ( bikeRentalSystem );
+while ( q4 ){
+    fprintf( files_CSV[FOURTH], "%s;%s;%ld\n", q4->nameSt , q4->nameEnd, q4->countTrips );
+
+    sprintf(stringTrips, "%ld", q4->countTrips );
+    addHTMLRow ( files_HTML[FOURTH], q4->nameSt, q4->nameEnd, stringTrips );
+    q4 = q4->tail;
+}
+
+// query5
+TmonthSt * q5 = query5( bikeRentalSystem );
+char * months[]={"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "Novemeber", "December" };
+for ( int i=0; i<MONTHS; i++) {
+    fprintf( files_CSV[FIFTH], "%s;%s;%s;%s\n", months[i], q5[i].FirstSt, q5[i].SecondSt, q5[i].ThirdSt );
+    addHTMLRow ( files_HTML[FIFTH], months[i], q5[i].FirstSt, q5[i].SecondSt, q5[i].ThirdSt );
+}
 
 return 0;
 }
@@ -139,9 +172,6 @@ return 0;
 
 //Funcion que crea archivo nuevo de csv y verifica si se creo bien
 // se ingresan los headers  por parametro 
-
-
-
 FILE * newfileCSV(const char * fileName, char * header )
 {
     errno = 0;
@@ -159,9 +189,7 @@ FILE * newfileCSV(const char * fileName, char * header )
 
 
 
-
-
-//Ya no la necesitamos 
+//Ya no la necesitamos
 void printHeaders( FILE *files1[], char* headers[], int fileCount){
     for( int i=0;i<fileCount;i++){
         fprintf(files1[i], "%s\n", headers[i]);

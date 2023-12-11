@@ -490,9 +490,9 @@ TmonthSt * query5 (bikeRentalSystemADT bikeRentalSystem ){
             CHECKMEMORY(ans[i].ThirdSt);
             strcpy(ans[i].ThirdSt, bikeRentalSystem->circularTrips[i].Top[2].st->name);
         } else{
-            ans[i].FirstSt = 0;
-            ans[i].SecondSt = 0;
-            ans[i].ThirdSt = 0;
+            ans[i].FirstSt = "Empty";
+            ans[i].SecondSt = "Empty";
+            ans[i].ThirdSt = "Empty";
         }
     }
     return ans;
