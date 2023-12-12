@@ -107,39 +107,31 @@ static TList binarySearch(TNameId *arr, int low, int high, int id, int cir){ // 
     return NULL;
 }
 
-size_t **enlargeTrips(size_t **trips, const size_t dim, size_t old_dim){
-    errno = 0;
-    size_t **resized = calloc(dim, sizeof(size_t*));
+size_t **enlargeTrips(size_t **trips, const size_t dim, size_t old_dim)
+{
+    size_t **newTrips = calloc(dim, sizeof(size_t *));
 
-    if (resized == NULL || errno == ENOMEM){
-        return NULL; // seria mejor devolverlo en una flag
+    if (newTrips == NULL || errno == ENOMEM){
+        return NULL; // seria mejor devolverlo con una flag
     }
-    for (int i = 0; i < dim; i++){
-        resized[i] = malloc(dim * sizeof(size_t **));
-        if (resized[i] == NULL || errno == ENOMEM){
+    for (size_t index = 0; index < dim; index++){
+        if ((newTrips[index] = malloc(dim * sizeof(size_t **))) == NULL || errno == ENOMEM){ 
             return NULL;
         }
-        if (i < old_dim){
-            for (int j = 0; j < old_dim; j++){
-                resized[i][j] = trips[i][j];
-            }
-            for (int j = old_dim; j < dim; i++){
-                resized[i][j] = 0;
-            }
-        }else{
-            for (int j = 0; i < dim; i++){
-                resized[i][j] = 0;
-            }
+        if (index < old_dim){
+            memcpy(newTrips[index], trips[index], old_dim * sizeof(size_t **));
+            memset(newTrips[index] + old_dim, 0, (dim - old_dim) * sizeof(size_t **));
+        }
+        else{
+            memset(newTrips[index], 0, dim * sizeof(size_t **));
         }
     }
-
-    // Libero la memoria de la matriz vieja
-    for (size_t i = 0; i < old_dim; i++){
-        free(trips[i]);
+    // libero la matriz vieja
+    for (size_t index = 0; index < old_dim; index++){
+        free(trips[index]);
     }
     free(trips);
-
-    return resized;
+    return newTrips;
 }
 
 static TList addStationRec(TList list, char *name, int id, int *added, int idx, TList * save){
@@ -156,8 +148,10 @@ static TList addStationRec(TList list, char *name, int id, int *added, int idx, 
         new->id = id;
         new->idx = idx;
         new->memTrips = 0;
-        new->oldestTrip = 0;// no estoy seguro como se inicializa aun
+        new->oldestTrip = 0; // no estoy seguro como se inicializa aun
+        new->oldestEnd = 0;
         new->tripsPopularEnd = 0;
+        new->popularEnd = 0;
         new->tail = list;
         (*save) = new;
         (*added) = 1;
@@ -174,7 +168,7 @@ int addStation(bikeRentalSystemADT bikeRentalSystem, char *name, int id){
     int added = 0;
     int cant = bikeRentalSystem->dim;
     TList save;
-    bikeRentalSystem->first = addStationRec(bikeRentalSystem->first, name, id, &added, cant, save);
+    bikeRentalSystem->first = addStationRec(bikeRentalSystem->first, name, id, &added, cant, &save);
     if (added){
         int old_dim = bikeRentalSystem->dim++;
         bikeRentalSystem->trips = enlargeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim, old_dim);
@@ -195,13 +189,13 @@ static struct tm mkTimeStruct(int minutes, int hour, int day, int month, int yea
     return info;
 }
 
-static void countToDay(TDayTrips * days, int wDayStart, int wDayEnd){
-    days[wDayStart].started++;
-    days[wDayEnd].ended++;
+static void countToDay(bikeRentalSystemADT system, int wDayStart, int wDayEnd){
+    system->days[wDayStart].started++;
+    system->days[wDayEnd].ended++;
 }
 
 static void checkOldest(TList list, time_t date, TList end){
-    if(list->oldestTrip == 0 || difftime(list->oldestTrip, date) > 0){ //si la fecha a registrar es mas vieja, pasa a ser la oldest
+    if (list->oldestTrip == 0 || difftime(list->oldestTrip, date) > 0){ // si la fecha a registrar es mas vieja, pasa a ser la oldest
         list->oldestTrip = date;
         list->oldestEnd = end->name;
     }
@@ -209,11 +203,17 @@ static void checkOldest(TList list, time_t date, TList end){
 }
 
 static void checkPop(TList list, size_t ntrips, TList end){
-    if( list->tripsPopularEnd <= ntrips){ //si es que son iguales tengo que verificar que sea alfabeticamente menor
+    if (list->tripsPopularEnd <= ntrips){ // si es que son iguales tengo que verificar que sea alfabeticamente menor
+        if (list->tripsPopularEnd == 0){ //primer registro
+            list->popularEnd = end->name;
+            list->tripsPopularEnd = ntrips;
+            return;
+        }
         int c;
-        if((c = strcasecmp(list->oldestEnd, end->name)) == 0){// si son el mismo tengo que sumar
+        if ((c = strcasecmp(list->popularEnd, end->name)) == 0){ // si son el mismo tengo que sumar
             list->tripsPopularEnd++;
-        }else if(c > 0 ){ //si viene antes alfabeticamente hay nuevo popular
+        }
+        else if (c > 0){ // si viene antes alfabeticamente hay nuevo popular
             list->popularEnd = end->name;
             list->tripsPopularEnd = ntrips;
         }
@@ -221,15 +221,11 @@ static void checkPop(TList list, size_t ntrips, TList end){
     return;
 }
 
-static TTopMonth countCircularTop(TTopMonth mon, TList start)
-{
+static TTopMonth countCircularTop(TTopMonth mon, TList start){
     TList aux = binarySearch(mon.Top, 0, mon.dim - 1, start->id, 1); // busco si ya es candidato en el mes
-    if (aux != NULL)
-    { // en caso de que estuviera solo ordeno
+    if (aux != NULL){ // en caso de que estuviera solo ordeno
         qsort(mon.Top, mon.dim, sizeof(TNameId), cirCmp);
-    }
-    else
-    {
+    }else{
         mon.dim++;
         mon.Top = updateArr(mon.Top, mon.dim, start, 1);
     }
@@ -239,10 +235,11 @@ static TTopMonth countCircularTop(TTopMonth mon, TList start)
 int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int iminutes, int ihour, int iday, int imonth, int iyear, int isMember, int fminutes, int fhour, int fday, int fmonth, int fyear)
 {
     TList start, end;
-    if(startId == endId){ //si es viaje circular
+    if (startId == endId){ // si es viaje circular
         start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
         end = start;
-    } else{
+    }
+    else{
         start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
         end = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, endId, 0);
     }
@@ -255,18 +252,18 @@ int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int im
 
     struct tm dateEnd = mkTimeStruct(fminutes, fhour, fday, fmonth, fyear);
     time_t endTimeValue = mktime(&dateEnd);
-    int wDayEnd = dateStart.tm_wday;
+    int wDayEnd = dateEnd.tm_wday;
 
-    countToDay(bikeRentalSystem->days, wDayStart, wDayEnd );
+    countToDay(bikeRentalSystem, wDayStart, wDayEnd);
 
-    int idxStart = start->idx; //consigo indices
+    int idxStart = start->idx; // consigo indices
     int idxEnd = end->idx;
 
-    bikeRentalSystem->trips[idxStart][idxEnd]++; //sumo en la matriz
-    start->memTrips+=isMember; 
-    if(idxStart != idxEnd){ //si no es circular lo considero candidato para viaje mas antiguo y/o ruta mas popular
+    size_t ntrips = ++bikeRentalSystem->trips[idxStart][idxEnd]; // sumo en la matriz
+    start->memTrips += isMember;
+    if (idxStart != idxEnd){ // si no es circular lo considero candidato para viaje mas antiguo y/o ruta mas popular
         checkOldest(start, startTimeValue, end);
-        checkPop(start, bikeRentalSystem->trips[idxStart][idxEnd], end);
+        checkPop(start, ntrips, end);
     }
     else if(difftime(endTimeValue, startTimeValue) > SECONDSINAMONTH){
         int cMon = dateStart.tm_mon;
@@ -507,26 +504,21 @@ void freeQuery5 ( TmonthSt * vec ){
     free(vec);
 }
 
-static void freeStations(TList list)
-{
-    if (list == NULL)
-    {
+static void freeStations(TList list){
+    if (list == NULL){
         return;
     }
     freeStations(list->tail);
     free(list);
 }
 
-static void freeMonths(TTopMonth *months)
-{
-    for (int i = 0; i < MONTHS; i++)
-    {
+static void freeMonths(TTopMonth *months){
+    for (int i = 0; i < MONTHS; i++){
         free(months[i].Top);
     }
 }
 
-void freeBikeRentalSystem(bikeRentalSystemADT bikeRentalSystem)
-{
+void freeBikeRentalSystem(bikeRentalSystemADT bikeRentalSystem){
     freeStations(bikeRentalSystem->first);
     freeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim);
     freeMonths(bikeRentalSystem->circularTrips);
