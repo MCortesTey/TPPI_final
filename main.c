@@ -5,6 +5,15 @@
 #include "bikesADT.h"
 #include "htmlTable.h"
 
+#ifdef MON
+#define CITY 1
+#define NAME 1
+#define ID 0
+#else
+#define CITY 0
+#define NAME 0
+#define ID 3
+
 #define HEADER1"bikeStation;memberTrips;casualTrips;allTrips"
 #define HEADER2"bikeStation;bikeEndStation;oldestDateTime"
 #define HEADER3"weekDay;startedTrips;endedTrips"
@@ -15,8 +24,13 @@
 #define FILES_PARAMETERS 2 //Cant archivos que hay que leer 
 #define MIN_YEAR
 #define MAX_YEAR
+#define CHECKMEMORY(ptr) if (ptr == NULL){\
+                            fprintf(stderr, "\nError: memory failure\n");\
+                            return 1;\
+                          }\
 
 enum position { FIRST=0, SECOND, THIRD, FOURTH, FIFTH };
+
 
 
 void closeFilesHTML (  FILE *files[], int fileCount);//recive una lista de archivos y los cierra
@@ -28,7 +42,7 @@ FILE * newfileCSV(const char * fileName, char * header );// Recive el nombre del
 int main ( int cantArg, char* args[]){
     //La cantidad de parametros tiene que ser tres ya que es el programa[0], el path al primer .csv[1], y el path al segundo .csv[2]
     if ( cantArg > 5 || cantArg < 3 ){
-        fprintf( stderr, "ERROR invalid amount of parameters");
+        fprintf( stderr, "\nError: invalid amount of parameters\n");
         exit(1);
     }
     int beginYear = 0, endYear = 0;
@@ -48,18 +62,30 @@ int main ( int cantArg, char* args[]){
         }
     }
 
-
 /*INICIALIZACION */
 
+FILE * trips = fopen( args[1], "r");// archivo de alquileres
+FILE * stations = fopen( args[2], "r");// archivo de estaciones
+FILE * files_data[] ={ trips, stations };
 
+// chequeo si se abrieron bien
+if ( files_data[FIRST] == NULL || files_data[SECOND] ){
+    fprintf (stderr, "\nError: opening file\n");
+    return 1;
+}
 
-FILE * info  = fopen( args[1], "r");// archivo de alguileres
-FILE * names = fopen( args[2], "r");// archivo de estaciones
-FILE * files_data[] ={info, names};
+//Inicializacion del TAD
+bikeRentalSystemADT bikeRentalSystem=  newBikeRentalSystem(beginYear, endYear);
+CHECKMEMORY(bikeRentalSystem);
 
+// leo estaciones
+int error = readStation(files_data[SECOND], NAME, ID, bikeRentalSystem);
+if ( error ){
+    freebikeRentalSystem(bikeRentalSystem);
+    return 1;
+}
 
 //CSV
-
 FILE * query1_CSV= newfileCSV( "query1.csv", HEADER1);
 FILE * query2_CSV= newfileCSV( "query2.csv",HEADER2);
 FILE * query3_CSV= newfileCSV( "query3.csv",HEADER3);
@@ -90,9 +116,6 @@ for (int i= 0; i<COUNT_Q;i++){
         exit(1);
        }
 }
-
-//Inicializacion del TAD
-bikeRentalSystemADT bikeRentalSystem=  newBikeRentalSystem(/*Falta pasar los anos*/) ;
 
 //en el casode ocurrir un error ( como  no hallar memoria para crear el tad), notificamos al usuario 
 
@@ -166,8 +189,13 @@ for ( int i=0; i<MONTHS; i++) {
     addHTMLRow ( files_HTML[FIFTH], months[i], q5[i].FirstSt, q5[i].SecondSt, q5[i].ThirdSt );
 }
 
+// close files csv and html
+closeFilesCSV(files_CSV, COUNT_Q);
+closeFilesHTML(files_HTML, COUNT_Q);
+
 return 0;
 }
+
 
 
 //Funcion que crea archivo nuevo de csv y verifica si se creo bien
@@ -186,7 +214,6 @@ FILE * newfileCSV(const char * fileName, char * header )
     fprintf(fileName,"%s\n", header );
     return file;
 }
-
 
 
 //Ya no la necesitamos
