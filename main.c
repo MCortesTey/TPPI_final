@@ -22,6 +22,9 @@
 #define DELIMIT ";"
 #define COUNT_Q 5 //cantidad de queries 
 #define FILES_PARAMETERS 2 //Cant archivos que hay que leer 
+#define DAYS 7
+#define MAXLENGTH 10
+#define MAXLENGTH_DATE 20
 #define MIN_YEAR
 #define MAX_YEAR
 #define CHECKMEMORY(ptr) if (ptr == NULL){\
@@ -136,6 +139,9 @@ if  ( bikeRentalSystem == NULL ||  errno == ENOMEM){
 //Arrancamos el iterador 
 toBegin( newBikeRentalSystem);
 
+char stringTrips[MAXLENGTH];
+char stringTrips2[MAXLENGTH];
+char stringTrips3[MAXLENGTH];
 
 // query1
 TList1 q1 = query1(bikeRentalSystem);
@@ -143,31 +149,37 @@ TList1 q1 = query1(bikeRentalSystem);
 while ( q1 ){
     fprintf ( files_CSV[FIRST], "%s;%ld;%ld;%ld\n" , q1->name, q1->cantMem, q1->cantCas, q1->cantTot);
 
-    sprintf (stringMem, "%ld", q1->cantMem );
-    sprintf (stringCas, "%ld", q1->cantCas );
-    sprintf (stringTot, "%ld", q1->cantTot );
+    sprintf (stringTrips, "%ld", q1->cantMem );
+    sprintf (stringTrips2, "%ld", q1->cantCas );
+    sprintf (stringTrips3, "%ld", q1->cantTot );
 
-    addHTMLRow(files_HTML[FIRST], q1->name, stringMem, stringCas, stringTot );
+    addHTMLRow(files_HTML[FIRST], q1->name, stringTrips, stringTrips2, stringTrips3 );
     q1 = q1->tail;
 }
 
 //query2 
+char dayString[MAXLENGTH_DATE];
+
 TList2 q2 = query2( bikeRentalSystem);
 
 while ( q2){
-    fprintf( files_CSV[SECOND],"%s;%s;%s\n" ,q2->nameSt, q2->nameEnd,/*hay que ver como pasar el q2->oldesttime a strn*/);
-    addHTMLRow  ( files_HTML[SECOND],3/*habria que poner macro?*/,q2->nameSt, q2->nameEnd,/*hay que ver como pasar el q2->oldesttime a strn*/ );
+    strftime(dateString, MAXLENGTH_DATE , "%x %H:%M", q2->oldestTrip );
+    fprintf( files_CSV[SECOND],"%s;%s;%s\n" ,q2->nameSt, q2->nameEnd, dateString);
+    addHTMLRow  ( files_HTML[SECOND], q2->nameSt, q2->nameEnd, dateString);
     q2=q2->tail;
 }
+
+char tripsDay[DAYS][MAXLENGTH];
+char tripsDay2[DAYS][MAXLENGTH];
 
 //query3
 TDayTrips * q3= query3( bikeRentalSystem);
 char* days[]={"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday","Sunday"};
 for ( int i=0;i<DAYS;i++){
     fprint( files_CSV[THIRD], "%s;%ld;%ld\n", days[i], q3[i].started, q3[i].ended);
-    sprintf (stringStart, "%ld",q3[i].started);
-    sprintf (stringEnd, "%ld", q3[i].ended);
-    addHTMLRow( files_HTML[THIRD],days[i],stringStart,stringEnd );
+    sprintf (tripsDay[i], "%ld",q3[i].started);
+    sprintf (tripsDay2[i], "%ld", q3[i].ended);
+    addHTMLRow( files_HTML[THIRD],days[i],tripsDay[i],tripsDay2[i] );
 
 }
 

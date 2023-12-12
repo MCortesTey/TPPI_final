@@ -424,9 +424,13 @@ TDayTrips * query3(bikeRentalSystemADT bikeRentalSystem ){
     if ( errno == ENOMEM ) 
         return NULL;
     for ( int i=0 ; i<DAYS ;i++){
-        ans[i].started= bikeRentalSystem->days[i].started;
-        ans[i].ended= bikeRentalSystem->days[i].ended;
+        for ( int j=1; j<DAYS ; j++){
+        ans[i].started= bikeRentalSystem->days[j].started;
+        ans[i].ended= bikeRentalSystem->days[j].ended;
+        }
     } 
+    ans[i].started= bikeRentalSystem->days[0].started;
+    ans[i].ended= bikeRentalSystem->days[0].ended;
     return ans;
 }
 

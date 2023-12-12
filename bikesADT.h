@@ -21,7 +21,7 @@ typedef Tquery1 * TList1;
 typedef struct query2 {
     char * nameSt; // nombre de la estacion de inicio
     char * nameEnd; // nombre de la esatcion de fin
-    time_t oldestTrip; // fecha y hora del viaje mas antiguo
+    struct tm oldestTrip; // fecha y hora del viaje mas antiguo
     struct query2 *tail;
 } Tquery2;
 
