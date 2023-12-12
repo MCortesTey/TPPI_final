@@ -7,13 +7,14 @@
 #define MONTHS 12
 #define TOP 3
 #define CHECKMEMORY(ptr) if ( ptr == NULL ) { return NULL; }
-#define SECONDSINAMONTH 30*24*60*60
+#define SECONDSINAMONTH (30*24*60*60)
 
 typedef struct TStation{
     char * name;
     int id;
     int idx; //indice correspondiente en la matriz de trips
     time_t oldestTrip; //tiempo del viaje mas antiguo
+    struct tm oldestStruct;  
     char * oldestEnd; //nombre estacion de fin viaje mas antiguio
     size_t tripsPopularEnd; //cantidad de la ruta mas visitado
     char * popularEnd;
@@ -180,7 +181,7 @@ int addStation(bikeRentalSystemADT bikeRentalSystem, char *name, int id){
 static struct tm mkTimeStruct(int minutes, int hour, int day, int month, int year){ //funcion para armar la estructura del nuevo dia
     struct tm info;
     info.tm_year = year - 1900;
-    info.tm_mon = month;
+    info.tm_mon = month - 1;
     info.tm_mday = day;
     info.tm_hour = hour;
     info.tm_min = minutes;
@@ -189,17 +190,35 @@ static struct tm mkTimeStruct(int minutes, int hour, int day, int month, int yea
     return info;
 }
 
-static void countToDay(bikeRentalSystemADT system, int wDayStart, int wDayEnd){
-    system->days[wDayStart].started++;
-    system->days[wDayEnd].ended++;
+static void countToDay(bikeRentalSystemADT system, int wDay, int flagStart ){
+    if(flagStart){
+        system->days[wDay].started++;
+        
+    }else{
+         system->days[wDay].ended++;
+    }
+    return ;
 }
 
-static void checkOldest(TList list, time_t date, TList end){
+
+
+static void checkOldest(TList list, time_t date, struct tm datestruct, TList end){
     if (list->oldestTrip == 0 || difftime(list->oldestTrip, date) > 0){ // si la fecha a registrar es mas vieja, pasa a ser la oldest
         list->oldestTrip = date;
+        list->oldestStruct = datestruct;
         list->oldestEnd = end->name;
     }
     return;
+}
+static time_t dateControl(bikeRentalSystemADT system, int minutes, int hour, int day, int month, int year, int start, struct tm *candidate){// start = 1 si es de inicio, 0 si es de end
+    struct tm date = mkTimeStruct(minutes, hour, day, month, year);
+    if (start){
+        (*candidate) = date;
+    }
+    time_t timeValue = mktime(&date);
+    int wDay = date.tm_wday; // int con el numero del dia de la semana
+    countToDay(system, wDay, start);
+    return timeValue;
 }
 
 static void checkPop(TList list, size_t ntrips, TList end){
@@ -232,42 +251,33 @@ static TTopMonth countCircularTop(TTopMonth mon, TList start){
     return mon;
 }
 
-int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int iminutes, int ihour, int iday, int imonth, int iyear, int isMember, int fminutes, int fhour, int fday, int fmonth, int fyear)
-{
+int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int iminutes, int ihour, int iday, int imonth, int iyear, int isMember, int fminutes, int fhour, int fday, int fmonth, int fyear){
     TList start, end;
+    struct tm oldestCandidate;
+    time_t startTimeValue = dateControl(bikeRentalSystem, iminutes, ihour, iday, imonth, iyear, 1, &oldestCandidate);
+    time_t endTimeValue = dateControl(bikeRentalSystem, fminutes, fhour, fday, fmonth, fyear, 0, &oldestCandidate);
     if (startId == endId){ // si es viaje circular
         start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
         end = start;
-    }
-    else{
+        if (start == NULL || end == NULL)
+            return 0;
+        if (difftime(endTimeValue, startTimeValue) > SECONDSINAMONTH){
+            bikeRentalSystem->circularTrips[imonth - 1] = countCircularTop(bikeRentalSystem->circularTrips[imonth - 1], start);
+        }
+    }else{
         start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
         end = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, endId, 0);
+        if (start == NULL || end == NULL)
+            return 0;
+        checkOldest(start, startTimeValue, oldestCandidate, end);
     }
-    if (start == NULL || end == NULL){
-        return 0;
-    }
-    struct tm dateStart = mkTimeStruct(iminutes, ihour, iday, imonth, iyear);
-    time_t startTimeValue = mktime(&dateStart);
-    int wDayStart = dateStart.tm_wday; // int con el numero del dia de la semana
-
-    struct tm dateEnd = mkTimeStruct(fminutes, fhour, fday, fmonth, fyear);
-    time_t endTimeValue = mktime(&dateEnd);
-    int wDayEnd = dateEnd.tm_wday;
-
-    countToDay(bikeRentalSystem, wDayStart, wDayEnd);
 
     int idxStart = start->idx; // consigo indices
     int idxEnd = end->idx;
-
     size_t ntrips = ++bikeRentalSystem->trips[idxStart][idxEnd]; // sumo en la matriz
     start->memTrips += isMember;
-    if (idxStart != idxEnd){ // si no es circular lo considero candidato para viaje mas antiguo y/o ruta mas popular
-        checkOldest(start, startTimeValue, end);
+    if (startId != endId){ // si no es circular lo considero candidato para viaje mas antiguo y/o ruta mas popular
         checkPop(start, ntrips, end);
-    }
-    else if(difftime(endTimeValue, startTimeValue) > SECONDSINAMONTH){
-        int cMon = dateStart.tm_mon;
-        bikeRentalSystem->circularTrips[cMon] = countCircularTop(bikeRentalSystem->circularTrips[cMon], start);
     }
     return 1;
 }
