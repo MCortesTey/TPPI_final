@@ -9,10 +9,12 @@
 #define CITY 1
 #define NAME 1
 #define ID 0
+#define MEMBERCOL 0
 #else
 #define CITY 0
 #define NAME 0
 #define ID 3
+#define MEMBERCOL 1
 
 #define HEADER1"bikeStation;memberTrips;casualTrips;allTrips"
 #define HEADER2"bikeStation;bikeEndStation;oldestDateTime"
@@ -43,7 +45,7 @@ FILE * newfileCSV(const char * fileName, char * header );// Recive el nombre del
 
 
 int main ( int cantArg, char* args[]){
-    //La cantidad de parametros tiene que ser tres ya que es el programa[0], el path al primer .csv[1], y el path al segundo .csv[2]
+//Manejo de errores I: Verifico si se introdujo una cantidad valida de parametros 
     if ( cantArg > 5 || cantArg < 3 ){
         fprintf( stderr, "\nError: invalid amount of parameters\n");
         exit(1);
@@ -59,35 +61,62 @@ int main ( int cantArg, char* args[]){
         beginYear = atoi(args[3]);
         endYear = atoi(args[4]);
 
+//Manejo de errores II: Verifico que los a;os introducidos sean aptos
         if ( beginYear > endYear ){
             fprintf(stderr, "\nError: Year2<Year1\n");
             return 1;
         }
     }
 
-/*INICIALIZACION */
 
+
+//Inicializacion de archivos de lectura
 FILE * trips = fopen( args[1], "r");// archivo de alquileres
 FILE * stations = fopen( args[2], "r");// archivo de estaciones
 FILE * files_data[] ={ trips, stations };
 
-// chequeo si se abrieron bien
+// Manejo de errores III:  Verifico se se abrieron  bien los archivos .csv de lectura
 if ( files_data[FIRST] == NULL || files_data[SECOND] ){
     fprintf (stderr, "\nError: opening file\n");
-    return 1;
+    closeFiles( files_data,FILES_PARAMETERS );
+    exit(1);
 }
 
 //Inicializacion del TAD
 bikeRentalSystemADT bikeRentalSystem=  newBikeRentalSystem(beginYear, endYear);
-CHECKMEMORY(bikeRentalSystem);
 
-// leo estaciones
-int error = readStation(files_data[SECOND], NAME, ID, bikeRentalSystem);
-if ( error ){
+
+//Manejo de errores IV: Verifico se inicializo correctametne el TAD debido al espacio de memoria 
+if  ( bikeRentalSystem == NULL ||  errno == ENOMEM){
+    fprintf( stderr, "ERROR memory unavailable");
+    closeFiles( files_data, FILES_PARAMETERS );
     freebikeRentalSystem(bikeRentalSystem);
-    return 1;
+    exit(1);
 }
 
+//Lectura de estaciones de archivo
+int error = readStation(files_data[SECOND], NAME, ID, bikeRentalSystem);
+
+//Manejo de errores V: Verifico si se pudieron agrear las estaciones
+if ( error ){
+    freebikeRentalSystem(bikeRentalSystem);
+    closeFiles( files_data, FILES_PARAMETERS );
+    exit(1) ;
+}
+
+//Lectura de viajes 
+error = readTrips( files_data[FIRST], MEMBERCOL, bikeRentalSystem);
+
+//Manejo de errores VI: Verifico si se pudieron agrear las estaciones
+if ( error ){
+    freebikeRentalSystem(bikeRentalSystem);
+    closeFiles( files_data, FILES_PARAMETERS );
+    exit(1) ;
+}
+
+
+
+//Inicializacion de archivos de escritura ( .csv y .html) 
 //CSV
 FILE * query1_CSV= newfileCSV( "query1.csv", HEADER1);
 FILE * query2_CSV= newfileCSV( "query2.csv",HEADER2);
@@ -96,8 +125,7 @@ FILE * query4_CSV= newfileCSV( "query4.csv",HEADER4);
 FILE * query5_CSV= newfileCSV( "query5.csv",HEADER5);
 FILE * files_CSV[]={query1_CSV,query2_CSV,query3_CSV,query4_CSV,query5_CSV};
 
-
-//FALTA VER COMO PONER  LOS NOMBRES DE LAS COLUMNAS ( EL PARAMENTRO RESTANTE)
+//HTML
 htmlTable query1_HTML= newTable( "query1.html", 4, "bikeStation", "memberTrips", "casualTrips", "allTrips" );
 htmlTable query2_HTML= newTable( "query2.html", 3, "bikeStation" , "bikeEndStation", "oldestDateTime" );
 htmlTable query3_HTML= newTable( "query3.html", 3, "weekDay", "startedTrips", "endedTrips" );
@@ -105,34 +133,31 @@ htmlTable query4_HTML= newTable( "query4.html", 4, "bikeStation", "mostPopRouteE
 htmlTable query5_HTML= newTable( "query5.html", 4, "month", "loopsTop1St", "loopsTop2St", "loopsTop3St");
 FILE * files_HTML[]={query1_HTML,query2_HTML,query3_HTML,query4_HTML,query5_HTML};
 
-//verfica que los archivos se hayan abierto sin errores
-//?
 
 
-//revisar si no estoy cerrando dos veces un archivo 
+//Manejo de errores VII: Verifico que se hayan abierto correctamente los archivos de escritura
 for (int i= 0; i<COUNT_Q;i++){
-    if ( files_data[0]==NULL || files_data[1] ==NULL ||  (files_CSV[i]==NULL)||(files_HTML[i]==NULL) ){
-        closeFiles( files_CSV, COUNT_Q);
+    if (files_CSV[i]==NULL)||(files_HTML[i]==NULL){
+        closeFilesCSV( files_CSV, COUNT_Q);
         closeHTMLFiles( files_HTML, COUNT_Q);
         closeFiles( files_data, FILES_PARAMETERS );
         fprintf( stderr, "ERROR in openning file");
+        freebikeRentalSystem(bikeRentalSystem);
         exit(1);
        }
 }
 
-//en el casode ocurrir un error ( como  no hallar memoria para crear el tad), notificamos al usuario 
-
-if  ( bikeRentalSystem == NULL ||  errno == ENOMEM){
-        fprintf( stderr, "ERROR memory unavailable");
-        closeFiles( files_CSV, COUNT_Q);
-        closeHTMLFiles( files_HTML, COUNT_Q);
-        closeFiles( files_data,FILES_PARAMETERS );
-        exit(1); //verificar si va el 1 u una macro asociada al error 
-}
 
 
-    /*HEADERS*/
-//Se imprimen los encabezados para cada archivo
+
+
+
+
+
+
+
+
+
 
 
 
@@ -143,7 +168,8 @@ char stringTrips[MAXLENGTH];
 char stringTrips2[MAXLENGTH];
 char stringTrips3[MAXLENGTH];
 
-// query1
+
+// Upload Query 1 
 TList1 q1 = query1(bikeRentalSystem);
 
 while ( q1 ){
@@ -157,7 +183,7 @@ while ( q1 ){
     q1 = q1->tail;
 }
 
-//query2 
+//Upload Query 2 
 char dayString[MAXLENGTH_DATE];
 
 TList2 q2 = query2( bikeRentalSystem);
@@ -172,7 +198,7 @@ while ( q2){
 char tripsDay[DAYS][MAXLENGTH];
 char tripsDay2[DAYS][MAXLENGTH];
 
-//query3
+//Upload Query 3
 TDayTrips * q3= query3( bikeRentalSystem);
 char* days[]={"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday","Sunday"};
 for ( int i=0;i<DAYS;i++){
@@ -183,7 +209,7 @@ for ( int i=0;i<DAYS;i++){
 
 }
 
-// query4 
+// Upload Query 4 
 TList4 q4 = query4 ( bikeRentalSystem );
 while ( q4 ){
     fprintf( files_CSV[FOURTH], "%s;%s;%ld\n", q4->nameSt , q4->nameEnd, q4->countTrips );
@@ -193,7 +219,7 @@ while ( q4 ){
     q4 = q4->tail;
 }
 
-// query5
+// Upload Query 5
 TmonthSt * q5 = query5( bikeRentalSystem );
 char * months[]={"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "Novemeber", "December" };
 for ( int i=0; i<MONTHS; i++) {
@@ -201,12 +227,18 @@ for ( int i=0; i<MONTHS; i++) {
     addHTMLRow ( files_HTML[FIFTH], months[i], q5[i].FirstSt, q5[i].SecondSt, q5[i].ThirdSt );
 }
 
-// close files csv and html
+
+
+// Fin: Cierre de los archivos de escritura
 closeFilesCSV(files_CSV, COUNT_Q);
 closeFilesHTML(files_HTML, COUNT_Q);
 
 return 0;
 }
+
+
+
+
 
 
 
@@ -233,8 +265,10 @@ void printHeaders( FILE *files1[], char* headers[], int fileCount){
     for( int i=0;i<fileCount;i++){
         fprintf(files1[i], "%s\n", headers[i]);
     }
-
 }
+
+
+
 void closeFilesCSV (  FILE *files[], int fileCount){
     for( int i=0;i<fileCount; i++)
     {
