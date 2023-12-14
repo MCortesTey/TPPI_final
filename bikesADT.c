@@ -254,6 +254,10 @@ static TTopMonth countCircularTop(TTopMonth mon, TList start){
 int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int iminutes, int ihour, int iday, int imonth, int iyear, int isMember, int fminutes, int fhour, int fday, int fmonth, int fyear){
     TList start, end;
     struct tm oldestCandidate;
+    
+
+
+
     time_t startTimeValue = dateControl(bikeRentalSystem, iminutes, ihour, iday, imonth, iyear, 1, &oldestCandidate);
     time_t endTimeValue = dateControl(bikeRentalSystem, fminutes, fhour, fday, fmonth, fyear, 0, &oldestCandidate);
     if (startId == endId){ // si es viaje circular
