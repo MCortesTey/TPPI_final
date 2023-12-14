@@ -382,6 +382,19 @@ void freeQuery1 ( TList1 list ){
     free(list);
 }
 
+void toBeginQuery1 ( TList q1 ){
+    q1->iter = q1->first;
+    return;
+}
+
+int hasNextQuery1 ( TList q1 ){
+    return q1->iter != NULL;
+}
+
+void * nextQuery1 ( TList q1 ){
+    q1->iter = q1->iter->tail;
+}
+
 // Query 2: Viaje mas antiguo por estación 
 // -orden alfabetico 
 // -no viajes circulares
@@ -395,7 +408,7 @@ char * getOldestEnd (bikeRentalSystemADT bikeRentalSystem ){
     return bikeRentalSystem->iter->oldestEnd;
 }
 
-Tquery2 * query2 ( bikeRentalSystemADT bikeRentalSystem ){
+Tquery2 * query2 ( bikeRentalSystemADT bikeRentalSystem, int *dim ){
     TVec2 * ans = calloc(1, bikeRentalSystem->dim * sizeof(struct vec2));
     CHECKMEMORY(ans);
 
@@ -414,11 +427,12 @@ Tquery2 * query2 ( bikeRentalSystemADT bikeRentalSystem ){
 
         next(bikeRentalSystem);
     }
+    (*dim) = i;
     return ans;
 }
 
-void freeQuery2 ( Tquery2 q2, bikeRentalSystemADT bikeRentalSystem ){
-    for (int i=0; i<bikeRentalSystem->dim; i++){
+void freeQuery2 ( Tquery2 q2, int dim ){
+    for (int i=0; i<dim; i++){
         free(q2[i].nameSt);
         free(q2[i].nameEnd);
     }

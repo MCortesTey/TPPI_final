@@ -17,6 +17,13 @@ typedef struct query1 {
 
 typedef Tquery1 * TList1;
 
+typedef struct node{
+    TList1 first;
+    TList1 iter;
+} TNode;
+
+typedef TNode * TList;
+
 typedef struct query2 {
     char * nameSt; // nombre de la estacion de inicio
     char * nameEnd; // nombre de la esatcion de fin
@@ -76,6 +83,15 @@ size_t getIdx ( bikeRentalSystemADT bikeRentalSystem );
 char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem );
 
 TList1 query1( bikeRentalSystemADT bikeRentalSystem );
+
+// apunta al primer elemento de query1
+void toBeginQuery1 ( TList q1 ); 
+
+// retorna 1 si hay elemento siguiente 
+int hasNextQuery1 ( TList q1 );
+
+//apunta al siguiente elemento
+void * nextQuery1 ( TList q1 );
 
 Tquery2 * query2( bikeRentalSystemADT bikeRentalSystem );
 

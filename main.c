@@ -15,8 +15,6 @@
 #define NAME 0
 #define ID 3
 #define MEMBERCOL 1
-
-#define MAXLINEA 100
 #define MAXDATE 20 
 
 enum { ERR_PAR=1, ERR_YEAR, ERR_OPEN_FILE, ERR_ADD };
@@ -32,9 +30,9 @@ enum { ERR_PAR=1, ERR_YEAR, ERR_OPEN_FILE, ERR_ADD };
 #define FILES_PARAMETERS 2 //Cant archivos que hay que leer 
 #define DAYS 7
 #define MAXLENGTH 10
+#define MAXLINE 100
 #define MAXLENGTH_DATE 20
-#define MIN_YEAR
-#define MAX_YEAR
+#define FREEYEAR -1
 
 enum position { FIRST=0, SECOND, THIRD, FOURTH, FIFTH };
 
@@ -55,11 +53,11 @@ int main ( int cantArg, char* args[]){
     }
     int beginYear = 0, endYear = 0;
     if ( cantArg < 4 ){
-        beginYear = MIN_YEAR;
-        endYear = MAX_YEAR;
+        beginYear = FREEYEAR;
+        endYear = FREEYEAR;
     } else if ( cantArg == 4 ){
         beginYear = atoi(args[3]);
-        endYear = MAX_YEAR;
+        endYear = FREEYEAR;
     } else if ( cantArg == 5 ){
         beginYear = atoi(args[3]);
         endYear = atoi(args[4]);
@@ -174,15 +172,16 @@ char stringTrips3[MAXLENGTH];
 // Upload Query 1 
 TList1 q1 = query1(bikeRentalSystem);
 
-while ( q1 ){
-    fprintf ( files_CSV[FIRST], "%s;%ld;%ld;%ld\n" , q1->name, q1->cantMem, q1->cantCas, q1->cantTot);
+toBeginQuery1 (TList q1);
+while ( hasNextQuery1(q1) ){
+    fprintf ( files_CSV[FIRST], "%s;%ld;%ld;%ld\n" , q1->iter->name, q1->iter->cantMem, q1->iter->cantCas, q1->iter->cantTot);
 
-    sprintf (stringTrips, "%ld", q1->cantMem );
-    sprintf (stringTrips2, "%ld", q1->cantCas );
-    sprintf (stringTrips3, "%ld", q1->cantTot );
+    sprintf (stringTrips, "%ld", q1->iter->cantMem );
+    sprintf (stringTrips2, "%ld", q1->iter->cantCas );
+    sprintf (stringTrips3, "%ld", q1->iter->cantTot );
 
-    addHTMLRow(files_HTML[FIRST], q1->name, stringTrips, stringTrips2, stringTrips3 );
-    q1 = q1->tail;
+    addHTMLRow(files_HTML[FIRST], q1->iter->name, stringTrips, stringTrips2, stringTrips3 );
+    nextQuery1(q1);
 }
 
 //Upload Query 2 
