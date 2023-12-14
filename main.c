@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "bikesADT.h"
+#include <ctype.h>
 
 #ifdef MON
 #define CITY 1
@@ -35,7 +36,10 @@ enum { ERR_PAR=1, ERR_YEAR, ERR_OPEN_FILE, ERR_READ };
 #define MIN_YEAR
 #define MAX_YEAR
 
+
 enum position { FIRST=0, SECOND, THIRD, FOURTH, FIFTH };
+enum arguments { PROGRAM=0, TRIPS, STATIONS, BEGINYEAR, ENDYEAR}
+
 
 void closeFilesHTML (  FILE *files[], int fileCount);//recive una lista de archivos y los cierra
 void closeFilesCSV (  FILE *files[], int fileCount);//recive una lista de archivos y los cierra
@@ -43,7 +47,8 @@ void printHeaders( FILE *files1[], char* headers[], int fileCount); // Recive do
 FILE * newfileCSV(const char * fileName, char * header );// Recive el nombre del .CSV y los titulos y lo abre, si falla retorna null
 int readStation ( const char * file, int station, int id, bikeRentalSystemADT bikeRentalSystem );
 int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalSystem );
-error_read_File ( bikeRentalSystemADT bikeRentalSystem, *  FILE *files[], int error, int count   );
+void error_read_File ( bikeRentalSystemADT bikeRentalSystem, *  FILE *files[], int error, int count   );
+int isNum( const char* str);
 
 
 
@@ -54,15 +59,26 @@ int main ( int cantArg, char* args[]){
         exit(ERR_PAR);
     }
     int beginYear = 0, endYear = 0;
+
     if ( cantArg < 4 ){
         beginYear = MIN_YEAR;
         endYear = MAX_YEAR;
     } else if ( cantArg == 4 ){
-        beginYear = atoi(args[3]);
+        if( !isNum( args[BEGINYEAR])){//Verifica que los parametros puedan ser pasados a int 
+            fprintf( stderr, "\nError: invalid type of parameters\n");
+            exit(ERR_PAR);
+            }
+        beginYear = atoi(args[BEGINYEAR]);
         endYear = MAX_YEAR;
     } else if ( cantArg == 5 ){
-        beginYear = atoi(args[3]);
-        endYear = atoi(args[4]);
+        if( !isNum( args[BEGINYEAR]) ||!isNum( args[ENDYEAR]) ){//Verifica que los parametros puedan ser pasados a int 
+            fprintf( stderr, "\nError: invalid type of parameters\n");
+            exit( ERR_PAR);
+            }
+        beginYear = atoi(args[BEGINYEAR]);
+        endYear = atoi(args[ENDYEAR]);
+
+
 
 //Manejo de errores II: Verifico que los a;os introducidos sean aptos
         if ( beginYear > endYear ){
@@ -71,15 +87,13 @@ int main ( int cantArg, char* args[]){
         }
     }
 
-
-
 //Inicializacion de archivos de lectura
-FILE * trips = fopen( args[1], "r");// archivo de alquileres
-FILE * stations = fopen( args[2], "r");// archivo de estaciones
+FILE * trips = fopen( args[TRIPS], "r");// archivo de alquileres
+FILE * stations = fopen( args[STATIONS], "r");// archivo de estaciones
 FILE * files_data[] ={ trips, stations };
 
 // Manejo de errores III:  Verifico se se abrieron  bien los archivos .csv de lectura
-if ( files_data[FIRST] == NULL || files_data[SECOND] ){
+if ( files_data[TRIPS-1] == NULL || files_data[STATIONS-1] ){
     fprintf (stderr, "\nError: opening file\n");
     closeFilesCSV( files_data,FILES_PARAMETERS );
     exit(ERR_OPEN_FILE);
@@ -100,14 +114,14 @@ if  ( bikeRentalSystem == NULL ||  errno == ENOMEM){
 }
 
 //Lectura de estaciones de archivo
-int error = readStation(files_data[SECOND], NAME, ID, bikeRentalSystem);
+int error = readStation(files_data[STATIONS-1], NAME, ID, bikeRentalSystem);
 
 //Manejo de errores V: Verifico si se pudieron leer las estaciones
 
 error_read_File( bikeRentalSystem, files_data, FILES_PARAMETERS);
 
 //Lectura de viajes 
-error = readTrips( files_data[FIRST], MEMBERCOL, bikeRentalSystem);
+error = readTrips( files_data[TRIPS-1], MEMBERCOL, bikeRentalSystem);
 
 //Manejo de errores VI: Verifico si se pudieron leer los viajes
 
@@ -333,10 +347,18 @@ int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalS
 }
 
 
-error_read_File ( bikeRentalSystemADT bikeRentalSystem, *  FILE *files[], int error, int count   ){
+void error_read_File ( bikeRentalSystemADT bikeRentalSystem, *  FILE *files[], int error, int count   ){
     freebikeRentalSystem(bikeRentalSystem);
     closeFilesCSV( files_data, count );
     exit(ERR_READ) ;
 }
 
 
+
+int isNum( const char* str){
+    for ( int i =0; str[i], i++){
+        if ( !isdigit(str[i])){
+            return 0;}
+    }
+    return 1;
+}
