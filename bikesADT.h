@@ -99,6 +99,14 @@ TDayTrips * query3(bikeRentalSystemADT bikeRentalSystem  );
 
 TQuery4 *query4(bikeRentalSystemADT bikeRentalSystem, int *dim);
 
-void freeQuery2 ( Tquery2 q2, bikeRentalSystemADT bikeRentalSystem );
+void freeQuery1 ( TList1 list);
+
+void freeQuery2(Tquery2 *q2, bikeRentalSystemADT bikeRentalSystem);
+
+void freeQuery3(TDayTrips *vec);
+
+void freeQuery4(TQuery4 *vec, int dim);
+
+void freeQuery5(TmonthSt *vec);
 
 #endif
