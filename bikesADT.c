@@ -178,14 +178,17 @@ int addStation(bikeRentalSystemADT bikeRentalSystem, char *name, int id){
     return added;
 }
 
-static struct tm mkTimeStruct(int minutes, int hour, int day, int month, int year){ //funcion para armar la estructura del nuevo dia
+static struct tm mkTimeStruct(char * date){ //funcion para armar la estructura del nuevo dia
     struct tm info;
+    //yyyy-MM-dd HH:mm:ss
+    int year, month, day , hour, min, sec; 
+    sscanf( date, "%d-%d-%d %d:%d:%d", &year, &month, &day, &hour, &min, &sec );
     info.tm_year = year - 1900;
     info.tm_mon = month - 1;
     info.tm_mday = day;
     info.tm_hour = hour;
-    info.tm_min = minutes;
-    info.tm_sec = 0;
+    info.tm_min = min;
+    info.tm_sec = sec;
     info.tm_isdst = -1;
     return info;
 }
@@ -210,6 +213,7 @@ static void checkOldest(TList list, time_t date, struct tm datestruct, TList end
     }
     return;
 }
+
 static time_t dateControl(bikeRentalSystemADT system, int minutes, int hour, int day, int month, int year, int start, struct tm *candidate){// start = 1 si es de inicio, 0 si es de end
     struct tm date = mkTimeStruct(minutes, hour, day, month, year);
     if (start){
@@ -254,10 +258,6 @@ static TTopMonth countCircularTop(TTopMonth mon, TList start){
 int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int iminutes, int ihour, int iday, int imonth, int iyear, int isMember, int fminutes, int fhour, int fday, int fmonth, int fyear){
     TList start, end;
     struct tm oldestCandidate;
-    
-
-
-
     time_t startTimeValue = dateControl(bikeRentalSystem, iminutes, ihour, iday, imonth, iyear, 1, &oldestCandidate);
     time_t endTimeValue = dateControl(bikeRentalSystem, fminutes, fhour, fday, fmonth, fyear, 0, &oldestCandidate);
     if (startId == endId){ // si es viaje circular
@@ -285,6 +285,14 @@ int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int im
     }
     return 1;
 }
+
+
+static struct  time_conversion( bikeRentalSystemADT bikeRental){
+
+}
+
+
+
 
 void toBegin (bikeRentalSystemADT bikeRentalSystem) {
     bikeRentalSystem->iter = bikeRentalSystem->first;
