@@ -7,7 +7,6 @@
 #define __bikesADT_h
 #define DAYS 7 
 
-
 typedef struct query1 {
     char * name; // nombre de la estacion
     size_t cantMem; // cantidad de viajes empezados por miembros
@@ -22,10 +21,7 @@ typedef struct query2 {
     char * nameSt; // nombre de la estacion de inicio
     char * nameEnd; // nombre de la esatcion de fin
     struct tm oldestTrip; // fecha y hora del viaje mas antiguo
-    struct query2 *tail;
 } Tquery2;
-
-typedef Tquery2 * TList2;
 
 typedef struct dayTrips{
     size_t started;
@@ -84,9 +80,11 @@ char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem );
 
 TList1 query1( bikeRentalSystemADT bikeRentalSystem );
 
-TList2 query2( bikeRentalSystemADT bikeRentalSystem );
+Tquery2 * query2( bikeRentalSystemADT bikeRentalSystem );
 
 TDayTrips * query3(bikeRentalSystemADT bikeRentalSystem  );
 
 TList4 query4( bikeRentalSystemADT bikeRentalSystem);
+
+void freeQuery2 ( Tquery2 q2, bikeRentalSystemADT bikeRentalSystem );
 #endif
