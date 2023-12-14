@@ -117,14 +117,14 @@ int error = readStation(files_data[STATIONS-1], NAME, ID, bikeRentalSystem);
 
 //Manejo de errores V: Verifico si se pudieron leer las estaciones
 
-error_read_File( bikeRentalSystem, files_data, FILES_PARAMETERS);
+error_read_File( bikeRentalSystem, files_data, ERR_READ ,FILES_PARAMETERS);
 
 //Lectura de viajes 
 error = readTrips( files_data[TRIPS-1], MEMBERCOL, bikeRentalSystem);
 
 //Manejo de errores VI: Verifico si se pudieron leer los viajes
 
-error_read_File( bikeRentalSystem, files_data, FILES_PARAMETERS);
+error_read_File( bikeRentalSystem, files_data, ERR_READ ,FILES_PARAMETERS);
 
 
 
@@ -190,7 +190,7 @@ char dayString[MAXLENGTH_DATE];
 Tquery2 * q2 = query2( bikeRentalSystem);
 
 for ( int i=0; i < bikeRentalSystem->dim ; i++){
-    strftime(dayString, MAXLENGTH_DATE , "%x %H:%M", q2[i].oldestTrip );
+    strftime(dayString, MAXLENGTH_DATE , "%x %H:%M",  q2[i].oldestTrip );
     fprintf( files_CSV[SECOND],"%s;%s;%s\n" ,q2[i].nameSt, q2[i].nameEnd, dayString);
     addHTMLRow  ( files_HTML[SECOND], q2[i].nameSt, q2[i].nameEnd, dayString);
 }
@@ -346,7 +346,7 @@ int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalS
 void error_read_File ( bikeRentalSystemADT bikeRentalSystem,  FILE *files[], int error, int count   ){
     freebikeRentalSystem(bikeRentalSystem);
     closeFilesCSV( files, count );
-    exit(ERR_READ) ;
+    exit(error) ;
 }
 
 

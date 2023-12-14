@@ -19,7 +19,7 @@ typedef struct query1 {
 typedef struct query1{
     Tquery1node * first;
     Tquery1node *  iter;
-} Tquery1
+} Tquery1;
 
 typedef Tquery1 * TList1;
 
