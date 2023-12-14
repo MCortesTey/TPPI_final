@@ -148,22 +148,6 @@ for (int i= 0; i<COUNT_Q;i++){
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-//Arrancamos el iterador 
-toBegin( newBikeRentalSystem);
-
 char stringTrips[MAXLENGTH];
 char stringTrips2[MAXLENGTH];
 char stringTrips3[MAXLENGTH];
@@ -237,11 +221,6 @@ return 0;
 }
 
 
-
-
-
-
-
 //Funcion que crea archivo nuevo de csv y verifica si se creo bien
 // se ingresan los headers  por parametro 
 FILE * newfileCSV(const char * fileName, char * header )
@@ -258,15 +237,6 @@ FILE * newfileCSV(const char * fileName, char * header )
     fprintf(fileName,"%s\n", header );
     return file;
 }
-
-
-//Ya no la necesitamos
-void printHeaders( FILE *files1[], char* headers[], int fileCount){
-    for( int i=0;i<fileCount;i++){
-        fprintf(files1[i], "%s\n", headers[i]);
-    }
-}
-
 
 
 void closeFilesCSV (  FILE *files[], int fileCount){
