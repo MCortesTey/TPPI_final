@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include "./bikesADT.h"
+#include "bikesADT.h"
 #define DAYS 7
 #define MONTHS 12
 #define TOP 3

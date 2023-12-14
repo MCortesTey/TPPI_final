@@ -261,15 +261,6 @@ FILE * newfileCSV(const char * fileName, char * header )
 }
 
 
-//Ya no la necesitamos
-void printHeaders( FILE *files1[], char* headers[], int fileCount){
-    for( int i=0;i<fileCount;i++){
-        fprintf(files1[i], "%s\n", headers[i]);
-    }
-}
-
-
-
 void closeFilesCSV (  FILE *files[], int fileCount){
     for( int i=0;i<fileCount; i++)
     {
