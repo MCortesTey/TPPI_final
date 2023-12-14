@@ -6,6 +6,7 @@
 #ifndef __bikesADT_h
 #define __bikesADT_h
 #define DAYS 7 
+#define MONTHS 12
 
 typedef struct query1 {
     char * name; // nombre de la estacion

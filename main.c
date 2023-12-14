@@ -37,7 +37,7 @@ enum { ERR_PAR=1, ERR_YEAR, ERR_OPEN_FILE, ERR_READ };
 
 
 enum position { FIRST=0, SECOND, THIRD, FOURTH, FIFTH };
-enum arguments { PROGRAM=0, TRIPS, STATIONS, BEGINYEAR, ENDYEAR}
+enum arguments { PROGRAM=0, TRIPS, STATIONS, BEGINYEAR, ENDYEAR};
 
 
 void closeFilesHTML (  FILE *files[], int fileCount);//recive una lista de archivos y los cierra
@@ -46,7 +46,7 @@ void printHeaders( FILE *files1[], char* headers[], int fileCount); // Recive do
 FILE * newfileCSV(const char * fileName, char * header );// Recive el nombre del .CSV y los titulos y lo abre, si falla retorna null
 int readStation ( const char * file, int station, int id, bikeRentalSystemADT bikeRentalSystem );
 int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalSystem );
-void error_read_File ( bikeRentalSystemADT bikeRentalSystem, *  FILE *files[], int error, int count   );
+void error_read_File ( bikeRentalSystemADT bikeRentalSystem, FILE *files[], int error, int count   );
 int isNum( const char* str);
 
 
@@ -63,17 +63,12 @@ int main ( int cantArg, char* args[]){
         beginYear = FREEYEAR;
         endYear = FREEYEAR;
     } else if ( cantArg == 4 ){
-<<<<<<< HEAD
         if( !isNum( args[BEGINYEAR])){//Verifica que los parametros puedan ser pasados a int 
             fprintf( stderr, "\nError: invalid type of parameters\n");
             exit(ERR_PAR);
             }
         beginYear = atoi(args[BEGINYEAR]);
-        endYear = MAX_YEAR;
-=======
-        beginYear = atoi(args[3]);
         endYear = FREEYEAR;
->>>>>>> 25727398359ba8eaadca9075874d93183299872c
     } else if ( cantArg == 5 ){
         if( !isNum( args[BEGINYEAR]) ||!isNum( args[ENDYEAR]) ){//Verifica que los parametros puedan ser pasados a int 
             fprintf( stderr, "\nError: invalid type of parameters\n");
@@ -156,7 +151,7 @@ FILE * files_HTML[]={query1_HTML,query2_HTML,query3_HTML,query4_HTML,query5_HTML
 
 //Manejo de errores VII: Verifico que se hayan abierto correctamente los archivos de escritura
 for (int i= 0; i<COUNT_Q;i++){
-    if (files_CSV[i]==NULL)||(files_HTML[i]==NULL){
+    if ((files_CSV[i]==NULL)||(files_HTML[i]==NULL)){
         closeFilesCSV( files_CSV, COUNT_Q);
         closeHTMLFiles( files_HTML, COUNT_Q);
         closeFilesCSV( files_data, FILES_PARAMETERS );
@@ -199,10 +194,10 @@ char dayString[MAXLENGTH_DATE];
 
 Tquery2 * q2 = query2( bikeRentalSystem);
 
-for ( int i=0; i<bikeRentalSystem->dim ; i++){
-    strftime(dateString, MAXLENGTH_DATE , "%x %H:%M", q2[i].oldestTrip );
-    fprintf( files_CSV[SECOND],"%s;%s;%s\n" ,q2[i].nameSt, q2[i].nameEnd, dateString);
-    addHTMLRow  ( files_HTML[SECOND], q2[i].nameSt, q2[i].nameEnd, dateString);
+for ( int i=0; i < bikeRentalSystem->dim ; i++){
+    strftime(dayString, MAXLENGTH_DATE , "%x %H:%M", q2[i].oldestTrip );
+    fprintf( files_CSV[SECOND],"%s;%s;%s\n" ,q2[i].nameSt, q2[i].nameEnd, dayString);
+    addHTMLRow  ( files_HTML[SECOND], q2[i].nameSt, q2[i].nameEnd, dayString);
 }
 
 
@@ -233,10 +228,10 @@ for (int i = 0 ; i < dim4 ; i++){
 TmonthSt * q5 = query5( bikeRentalSystem );
 char * months[]={"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "Novemeber", "December" };
 for ( int i=0; i<MONTHS; i++) {
-    if ( q5[i].FirstSt != 0 )
+    if ( q5[i].FirstSt != 0 ){
         fprintf( files_CSV[FIFTH], "%s;%s;%s;%s\n", months[i], q5[i].FirstSt, q5[i].SecondSt, q5[i].ThirdSt );
         addHTMLRow ( files_HTML[FIFTH], months[i], q5[i].FirstSt, q5[i].SecondSt, q5[i].ThirdSt );
-    else {
+    } else {
         fprintf( files_CSV[FIFTH], "%s;%s;%s;%s\n", months[i], "Empty", "Empty", "Empty" );
         addHTMLRow ( files_HTML[FIFTH], months[i], "Empty", "Empty", "Empty");
     }
@@ -297,11 +292,11 @@ void closeFilesHTML (FILE *files[], int fileCount){
 
 
 int readStation ( const char * file, int station, int id, bikeRentalSystemADT bikeRentalSystem ){
-    char line[MAXLINEA], *token, *stationName;
+    char line[MAXLINE], *token, *stationName;
     int error = 0, stationId, i=0;
 
     while ( fgets(line, sizeof(line), file) != NULL ){
-        token = strtok(line, DELIM);
+        token = strtok(line, DELIMIT);
 
         for (i=0; token != NULL; i++) {
             if ( i == station ){
@@ -311,7 +306,7 @@ int readStation ( const char * file, int station, int id, bikeRentalSystemADT bi
                 stationId = atoi(token);
 
             } 
-            token=strtok(NULL, DELIM);
+            token=strtok(NULL, DELIMIT);
         }
         error = addStation(bikeRentalSystem, stationName, stationId );
     }
@@ -320,28 +315,28 @@ int readStation ( const char * file, int station, int id, bikeRentalSystemADT bi
 
 
 int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalSystem ){
-    char line[MAXLINEA];
+    char line[MAXLINE];
     char date[MAXDATE], endDate[MAXDATE]; //yyyy-MM-dd HH:mm:ss
     int error =0;
-    int Id, endId, membership, ; 
+    int Id, endId, membership ; 
 
     while( fgets ( line, sizeof( line), file )!=NULL){
-        char * token  = strtok( line, DELIM);
+        char * token  = strtok( line, DELIMIT);
         while( token != NULL ) {
             strcpy( date, token);
-            token=strtok(NULL, DELIM);
+            token=strtok(NULL, DELIMIT);
 
             Id = atoi( token);
-            token=strtok(NULL, DELIM);
+            token=strtok(NULL, DELIMIT);
 
             strcpy( endDate, token);
-            token=strtok(NULL, DELIM);
+            token=strtok(NULL, DELIMIT);
 
             endId = atoi( token);
-            token=strtok(NULL, DELIM);
+            token=strtok(NULL, DELIMIT);
 
             if ( membercol) 
-                    token=strtok(NULL, DELIM); //Si member col es 1 significa que no es esta columna  (voy al siguiente) 
+                    token=strtok(NULL, DELIMIT); //Si member col es 1 significa que no es esta columna  (voy al siguiente) 
 
             membership  = (strcmp(  token , MEMBER) == 0); //verificar si membership se manejaba con 1 y 0 ;
                                                         
@@ -353,16 +348,16 @@ int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalS
 }
 
 
-void error_read_File ( bikeRentalSystemADT bikeRentalSystem, *  FILE *files[], int error, int count   ){
+void error_read_File ( bikeRentalSystemADT bikeRentalSystem,  FILE *files[], int error, int count   ){
     freebikeRentalSystem(bikeRentalSystem);
-    closeFilesCSV( files_data, count );
+    closeFilesCSV( files, count );
     exit(ERR_READ) ;
 }
 
 
 
 int isNum( const char* str){
-    for ( int i =0; str[i], i++){
+    for ( int i =0; str[i]; i++){
         if ( !isdigit(str[i])){
             return 0;}
     }

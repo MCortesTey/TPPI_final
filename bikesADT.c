@@ -3,9 +3,6 @@
 #include <string.h>
 #include <errno.h>
 #include "bikesADT.h"
-#define DAYS 7
-#define MONTHS 12
-#define TOP 3
 #define CHECKMEMORY(ptr) if ( ptr == NULL ) { return NULL; }
 #define SECONDSINAMONTH (30*24*60*60)
 
@@ -408,7 +405,7 @@ char * getOldestEnd (bikeRentalSystemADT bikeRentalSystem ){
     return bikeRentalSystem->iter->oldestEnd;
 }
 
-Tquery2 * query2 ( bikeRentalSystemADT bikeRentalSystem ){
+Tquery2 * query2 ( bikeRentalSystemADT bikeRentalSystem, int *dim){
     Tquery2 * ans = calloc(1, bikeRentalSystem->dim * sizeof(Tquery2));
     CHECKMEMORY(ans);
 
