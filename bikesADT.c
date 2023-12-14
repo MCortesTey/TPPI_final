@@ -396,7 +396,7 @@ char * getOldestEnd (bikeRentalSystemADT bikeRentalSystem ){
 }
 
 Tquery2 * query2 ( bikeRentalSystemADT bikeRentalSystem ){
-    TVec2 * ans = calloc(1, bikeRentalSystem->dim * sizeof(struct vec2));
+    Tquery2 * ans = calloc(1, bikeRentalSystem->dim * sizeof(Tquery2));
     CHECKMEMORY(ans);
 
     toBegin(bikeRentalSystem);
@@ -410,14 +410,14 @@ Tquery2 * query2 ( bikeRentalSystemADT bikeRentalSystem ){
         CHECKMEMORY(ans[i].nameEnd);
         strcpy(ans[i].nameEnd, getPopularEnd(bikeRentalSystem));
 
-        ans[i++].oldestTrip = bikeRentalSystem->iter->oldestTrip;
+        ans[i++].oldestTrip = bikeRentalSystem->iter->oldestStruct;
 
         next(bikeRentalSystem);
     }
     return ans;
 }
 
-void freeQuery2 ( Tquery2 q2, bikeRentalSystemADT bikeRentalSystem ){
+void freeQuery2( Tquery2 * q2, bikeRentalSystemADT bikeRentalSystem ){
     for (int i=0; i<bikeRentalSystem->dim; i++){
         free(q2[i].nameSt);
         free(q2[i].nameEnd);
@@ -480,8 +480,8 @@ TQuery4 * query4( bikeRentalSystemADT bikeRentalSystem, int *dim){
 
 void freeQuery4 ( TQuery4 * vec , int dim){
     for (int i = 0 ; i < dim; i++){
-        free(vec->nameSt);
-        free(vec->nameEnd);
+        free(vec[i].nameSt);
+        free(vec[i].nameEnd);
     }
     return;
 }
