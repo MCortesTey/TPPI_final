@@ -165,19 +165,14 @@ for (int i= 0; i<COUNT_Q;i++){
 
 
 
-
-//Arrancamos el iterador 
-toBegin( newBikeRentalSystem);
-
+// Upload Query 1 
 char stringTrips[MAXLENGTH];
 char stringTrips2[MAXLENGTH];
 char stringTrips3[MAXLENGTH];
 
-
-// Upload Query 1 
 TList1 q1 = query1(bikeRentalSystem);
 
-toBeginQuery1 (TList q1);
+toBeginQuery1 (TList1 q1);
 while ( hasNextQuery1(q1) ){
     fprintf ( files_CSV[FIRST], "%s;%ld;%ld;%ld\n" , q1->iter->name, q1->iter->cantMem, q1->iter->cantCas, q1->iter->cantTot);
 

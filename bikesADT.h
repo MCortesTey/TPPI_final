@@ -14,16 +14,14 @@ typedef struct query1 {
     size_t cantCas; // cantidad de viajes empezados por casuales
     size_t cantTot; // cantidad de viajes empezados totales
     struct query1 * tail;
-} Tquery1;
+} Tquery1node;
+
+typedef struct query1{
+    Tquery1node * first;
+    Tquery1node *  iter;
+} Tquery1
 
 typedef Tquery1 * TList1;
-
-typedef struct node{
-    TList1 first;
-    TList1 iter;
-} TNode;
-
-typedef TNode * TList;
 
 typedef struct query2 {
     char * nameSt; // nombre de la estacion de inicio
@@ -94,6 +92,8 @@ int hasNextQuery1 ( TList q1 );
 //apunta al siguiente elemento
 void * nextQuery1 ( TList q1 );
 
+char * getOldestEnd (bikeRentalSystemADT bikeRentalSystem );
+
 Tquery2 * query2( bikeRentalSystemADT bikeRentalSystem );
 
 TDayTrips * query3(bikeRentalSystemADT bikeRentalSystem  );
@@ -102,7 +102,7 @@ TQuery4 *query4(bikeRentalSystemADT bikeRentalSystem, int *dim);
 
 void freeQuery1 ( TList1 list);
 
-void freeQuery2(Tquery2 *q2, bikeRentalSystemADT bikeRentalSystem);
+void freeQuery2(Tquery2 *q2, int dim);
 
 void freeQuery3(TDayTrips *vec);
 

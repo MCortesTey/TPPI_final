@@ -416,9 +416,9 @@ Tquery2 * query2 ( bikeRentalSystemADT bikeRentalSystem, int *dim){
         CHECKMEMORY(ans[i].nameSt);
         strcpy(ans[i].nameSt, getName(bikeRentalSystem));
 
-        ans[i].nameEnd = malloc(strlen(getPopularEnd(bikeRentalSystem)) + 1);
+        ans[i].nameEnd = malloc(strlen(getOldestEnd(bikeRentalSystem)) + 1);
         CHECKMEMORY(ans[i].nameEnd);
-        strcpy(ans[i].nameEnd, getPopularEnd(bikeRentalSystem));
+        strcpy(ans[i].nameEnd, getOldestEnd(bikeRentalSystem));
 
         ans[i++].oldestTrip = bikeRentalSystem->iter->oldestStruct;
 
