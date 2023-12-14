@@ -178,14 +178,17 @@ int addStation(bikeRentalSystemADT bikeRentalSystem, char *name, int id){
     return added;
 }
 
-static struct tm mkTimeStruct(int minutes, int hour, int day, int month, int year){ //funcion para armar la estructura del nuevo dia
+static struct tm mkTimeStruct(char * date){ //funcion para armar la estructura del nuevo dia
     struct tm info;
+    //yyyy-MM-dd HH:mm:ss
+    int year, month, day , hour, min, sec; 
+    sscanf( date, "%d-%d-%d %d:%d:%d", &year, &month, &day, &hour, &min, &sec );
     info.tm_year = year - 1900;
     info.tm_mon = month - 1;
     info.tm_mday = day;
     info.tm_hour = hour;
-    info.tm_min = minutes;
-    info.tm_sec = 0;
+    info.tm_min = min;
+    info.tm_sec = sec;
     info.tm_isdst = -1;
     return info;
 }
@@ -283,6 +286,14 @@ int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char *
     }
     return 1;
 }
+
+
+static struct  time_conversion( bikeRentalSystemADT bikeRental){
+
+}
+
+
+
 
 void toBegin (bikeRentalSystemADT bikeRentalSystem) {
     bikeRentalSystem->iter = bikeRentalSystem->first;
