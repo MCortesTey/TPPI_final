@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "bikesADT.h"
-#include "htmlTable.h"
 
 #ifdef MON
 #define CITY 1
@@ -212,13 +211,13 @@ for ( int i=0;i<DAYS;i++){
 }
 
 // Upload Query 4 
-TList4 q4 = query4 ( bikeRentalSystem );
-while ( q4 ){
-    fprintf( files_CSV[FOURTH], "%s;%s;%ld\n", q4->nameSt , q4->nameEnd, q4->countTrips );
+int dim4;
+TQuery4 * q4 = query4 ( bikeRentalSystem , &dim4);
+for (int i = 0 ; i < dim4 ; i++){
+    fprintf( files_CSV[FOURTH], "%s;%s;%ld\n", q4[i].nameSt , q4[i].nameEnd, q4[i].countTrips );
 
-    sprintf(stringTrips, "%ld", q4->countTrips );
-    addHTMLRow ( files_HTML[FOURTH], q4->nameSt, q4->nameEnd, stringTrips );
-    q4 = q4->tail;
+    sprintf(stringTrips, "%ld", q4[i].countTrips );
+    addHTMLRow ( files_HTML[FOURTH], q4[i].nameSt, q4[i].nameEnd, stringTrips );
 }
 
 // Upload Query 5
