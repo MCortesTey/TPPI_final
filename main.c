@@ -177,19 +177,19 @@ while ( q1 ){
 //Upload Query 2 
 char dayString[MAXLENGTH_DATE];
 
-TList2 q2 = query2( bikeRentalSystem);
+Tquery2 * q2 = query2( bikeRentalSystem);
 
-while ( q2){
-    strftime(dateString, MAXLENGTH_DATE , "%x %H:%M", q2->oldestTrip );
-    fprintf( files_CSV[SECOND],"%s;%s;%s\n" ,q2->nameSt, q2->nameEnd, dateString);
-    addHTMLRow  ( files_HTML[SECOND], q2->nameSt, q2->nameEnd, dateString);
-    q2=q2->tail;
+for ( int i=0; i<bikeRentalSystem->dim ; i++){
+    strftime(dateString, MAXLENGTH_DATE , "%x %H:%M", q2[i].oldestTrip );
+    fprintf( files_CSV[SECOND],"%s;%s;%s\n" ,q2[i].nameSt, q2[i].nameEnd, dateString);
+    addHTMLRow  ( files_HTML[SECOND], q2[i].nameSt, q2[i].nameEnd, dateString);
 }
 
+
+//Upload Query 3
 char tripsDay[DAYS][MAXLENGTH];
 char tripsDay2[DAYS][MAXLENGTH];
 
-//Upload Query 3
 TDayTrips * q3= query3( bikeRentalSystem);
 char* days[]={"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday","Sunday"};
 for ( int i=0;i<DAYS;i++){
@@ -197,32 +197,34 @@ for ( int i=0;i<DAYS;i++){
     sprintf (tripsDay[i], "%ld",q3[i].started);
     sprintf (tripsDay2[i], "%ld", q3[i].ended);
     addHTMLRow( files_HTML[THIRD],days[i],tripsDay[i],tripsDay2[i] );
-
 }
 
 // Upload Query 4 
-TList4 q4 = query4 ( bikeRentalSystem );
-while ( q4 ){
-    fprintf( files_CSV[FOURTH], "%s;%s;%ld\n", q4->nameSt , q4->nameEnd, q4->countTrips );
+int dim4;
+TQuery4 * q4 = query4 ( bikeRentalSystem , &dim4);
+for (int i = 0 ; i < dim4 ; i++){
+    fprintf( files_CSV[FOURTH], "%s;%s;%ld\n", q4[i].nameSt , q4[i].nameEnd, q4[i].countTrips );
 
-    sprintf(stringTrips, "%ld", q4->countTrips );
-    addHTMLRow ( files_HTML[FOURTH], q4->nameSt, q4->nameEnd, stringTrips );
-    q4 = q4->tail;
+    sprintf(stringTrips, "%ld", q4[i].countTrips );
+    addHTMLRow ( files_HTML[FOURTH], q4[i].nameSt, q4[i].nameEnd, stringTrips );
 }
 
 // Upload Query 5
 TmonthSt * q5 = query5( bikeRentalSystem );
 char * months[]={"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "Novemeber", "December" };
 for ( int i=0; i<MONTHS; i++) {
-    fprintf( files_CSV[FIFTH], "%s;%s;%s;%s\n", months[i], q5[i].FirstSt, q5[i].SecondSt, q5[i].ThirdSt );
-    addHTMLRow ( files_HTML[FIFTH], months[i], q5[i].FirstSt, q5[i].SecondSt, q5[i].ThirdSt );
+    if ( q5[i].FirstSt != 0 )
+        fprintf( files_CSV[FIFTH], "%s;%s;%s;%s\n", months[i], q5[i].FirstSt, q5[i].SecondSt, q5[i].ThirdSt );
+        addHTMLRow ( files_HTML[FIFTH], months[i], q5[i].FirstSt, q5[i].SecondSt, q5[i].ThirdSt );
+    else {
+        fprintf( files_CSV[FIFTH], "%s;%s;%s;%s\n", months[i], "Empty", "Empty", "Empty" );
+        addHTMLRow ( files_HTML[FIFTH], months[i], "Empty", "Empty", "Empty");
+    }
 }
 
 
-
 // Fin: Cierre de los archivos de escritura
-closeFilesCSV(files_CSV, COUNT_Q);
-closeFilesHTML(files_HTML, COUNT_Q);
+closeFiles (files_data, FILES_PARAMETERS);
 
 return 0;
 }
@@ -306,13 +308,13 @@ int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalS
     while( fgets ( line, sizeof( line), file )!=NULL){
         char * token  = strtok( line, DELIM);
         while( token != NULL ) {
-            strncpy( date, token);
+            strcpy( date, token);
             token=strtok(NULL, DELIM);
 
             Id = atoi( token);
             token=strtok(NULL, DELIM);
 
-            strncpy( endDate, token);
+            strcpy( endDate, token);
             token=strtok(NULL, DELIM);
 
             endId = atoi( token);

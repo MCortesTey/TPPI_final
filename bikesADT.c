@@ -267,7 +267,7 @@ int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char *
         end = start;
         if (start == NULL || end == NULL)
             return 0;
-        if ( cMonStart == cMonEnd && difftime(endTimeValue, startTimeValue) >= SECONDSINAMONTH){
+        if ( cMonStart == cMonEnd && difftime(endTimeValue, startTimeValue) <= SECONDSINAMONTH){
             bikeRentalSystem->circularTrips[cMonStart] = countCircularTop(bikeRentalSystem->circularTrips[cMonStart], start);
         }
     }else{
@@ -395,33 +395,34 @@ char * getOldestEnd (bikeRentalSystemADT bikeRentalSystem ){
     return bikeRentalSystem->iter->oldestEnd;
 }
 
-TList2 query2( bikeRentalSystemADT bikeRentalSystem ){
-    TList2 ans = calloc(1, sizeof(Tquery2));
+Tquery2 * query2 ( bikeRentalSystemADT bikeRentalSystem ){
+    TVec2 * ans = calloc(1, bikeRentalSystem->dim * sizeof(struct vec2));
     CHECKMEMORY(ans);
 
     toBegin(bikeRentalSystem);
-    while ( hasNext(bikeRentalSystem) ){
-        ans->nameSt = malloc(strlen(getName(bikeRentalSystem)) + 1 );
-        CHECKMEMORY(ans->nameSt)
-        ans->nameEnd = malloc(strlen(getPopularEnd(bikeRentalSystem)) + 1 );
-        CHECKMEMORY(ans->nameEnd)
+    int i = 0;
+    while ( hasNext (bikeRentalSystem)){
+        ans[i].nameSt = malloc(strlen(getName(bikeRentalSystem)) + 1);
+        CHECKMEMORY(ans[i].nameSt);
+        strcpy(ans[i].nameSt, getName(bikeRentalSystem));
 
-        strcpy(ans->nameSt, getName(bikeRentalSystem));
-        strcpy(ans->nameEnd, getPopularEnd(bikeRentalSystem));
-        ans->oldestTrip = bikeRentalSystem->iter->oldestStruct;
+        ans[i].nameEnd = malloc(strlen(getPopularEnd(bikeRentalSystem)) + 1);
+        CHECKMEMORY(ans[i].nameEnd);
+        strcpy(ans[i].nameEnd, getPopularEnd(bikeRentalSystem));
 
-        ans = ans->tail;
+        ans[i++].oldestTrip = bikeRentalSystem->iter->oldestTrip;
+
         next(bikeRentalSystem);
     }
     return ans;
 }
 
-void freeQuery2 ( TList2 list ){
-    if ( list == NULL ){
-        return;
+void freeQuery2 ( Tquery2 q2, bikeRentalSystemADT bikeRentalSystem ){
+    for (int i=0; i<bikeRentalSystem->dim; i++){
+        free(q2[i].nameSt);
+        free(q2[i].nameEnd);
     }
-    freeQuery2 (list->tail);
-    free(list);
+    free(q2);
 }
 
 // Query 3:  Total viajes iniciados y finalizados por dia de la semana
@@ -460,29 +461,29 @@ char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem ){
 }
 
 
-TList4 query4( bikeRentalSystemADT bikeRentalSystem){
+TQuery4 * query4( bikeRentalSystemADT bikeRentalSystem, int *dim){
     toBegin( bikeRentalSystem);
-    TList4 ans;
+    TQuery4  * ans = malloc(bikeRentalSystem->dim * sizeof(TQuery4));
+    CHECKMEMORY(ans);
+    int i = 0;
     while( hasNext( bikeRentalSystem)){
-        ans= malloc( sizeof( Tquery4));
-        CHECKMEMORY( ans);
-        ans->nameSt= copyStr( getName( bikeRentalSystem));
+        ans[i].nameSt = copyStr(getName(bikeRentalSystem));
         CHECKMEMORY( ans->nameSt);
-        ans->nameEnd= copyStr(  getPopularEnd( bikeRentalSystem) );
+        ans[i].nameEnd= copyStr( getPopularEnd( bikeRentalSystem) );
         CHECKMEMORY( ans->nameEnd);
-        ans->countTrips= bikeRentalSystem->iter->tripsPopularEnd;
-        ans=ans->tail;
-        next( bikeRentalSystem);
+        ans[i++].countTrips = bikeRentalSystem->iter->tripsPopularEnd;
+        next(bikeRentalSystem);
     }
+    (*dim) = i;
     return ans;
 }
 
-void freeQuery4 ( TList4 list ){
-    if ( list == NULL ){
-        return;
+void freeQuery4 ( TQuery4 * vec , int dim){
+    for (int i = 0 ; i < dim; i++){
+        free(vec->nameSt);
+        free(vec->nameEnd);
     }
-    freeQuery4(list->tail);
-    free(list);
+    return;
 }
 
 
@@ -495,21 +496,23 @@ TmonthSt * query5 (bikeRentalSystemADT bikeRentalSystem ){
         return NULL;
     for (int i=0; i<MONTHS ; i++){
         if ( bikeRentalSystem->circularTrips[i].dim >= 3){
-            ans[i].FirstSt = malloc (strlen(bikeRentalSystem->circularTrips[i].Top[0].st->name) + 1);
+            size_t dim = bikeRentalSystem->circularTrips[i].dim;
+
+            ans[i].FirstSt = malloc (strlen(bikeRentalSystem->circularTrips[i].Top[dim-1].st->name) + 1);
             CHECKMEMORY(ans[i].FirstSt);
-            strcpy(ans[i].FirstSt, bikeRentalSystem->circularTrips[i].Top[0].st->name);
+            strcpy(ans[i].FirstSt, bikeRentalSystem->circularTrips[i].Top[dim-1].st->name);
 
-            ans[i].SecondSt = malloc(strlen(bikeRentalSystem->circularTrips[i].Top[1].st->name) + 1);
+            ans[i].SecondSt = malloc(strlen(bikeRentalSystem->circularTrips[i].Top[dim-2].st->name) + 1);
             CHECKMEMORY(ans[i].SecondSt);
-            strcpy(ans[i].SecondSt, bikeRentalSystem->circularTrips[i].Top[1].st->name);
+            strcpy(ans[i].SecondSt, bikeRentalSystem->circularTrips[i].Top[dim-2].st->name);
 
-            ans[i].ThirdSt = malloc(strlen(bikeRentalSystem->circularTrips[i].Top[2].st->name) + 1);
+            ans[i].ThirdSt = malloc(strlen(bikeRentalSystem->circularTrips[i].Top[dim-3].st->name) + 1);
             CHECKMEMORY(ans[i].ThirdSt);
-            strcpy(ans[i].ThirdSt, bikeRentalSystem->circularTrips[i].Top[2].st->name);
+            strcpy(ans[i].ThirdSt, bikeRentalSystem->circularTrips[i].Top[dim-3].st->name);
         } else{
-            ans[i].FirstSt = "Empty";
-            ans[i].SecondSt = "Empty";
-            ans[i].ThirdSt = "Empty";
+            ans[i].FirstSt = 0;
+            ans[i].SecondSt = 0;
+            ans[i].ThirdSt = 0;
         }
     }
     return ans;
