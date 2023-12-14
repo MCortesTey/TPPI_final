@@ -16,8 +16,6 @@
 #define NAME 0
 #define ID 3
 #define MEMBERCOL 1
-
-#define MAXLINEA 100
 #define MAXDATE 20 
 
 enum { ERR_PAR=1, ERR_YEAR, ERR_OPEN_FILE, ERR_READ };
@@ -33,8 +31,9 @@ enum { ERR_PAR=1, ERR_YEAR, ERR_OPEN_FILE, ERR_READ };
 #define FILES_PARAMETERS 2 //Cant archivos que hay que leer 
 #define DAYS 7
 #define MAXLENGTH 10
-#define MIN_YEAR
-#define MAX_YEAR
+#define MAXLINE 100
+#define MAXLENGTH_DATE 20
+#define FREEYEAR -1
 
 
 enum position { FIRST=0, SECOND, THIRD, FOURTH, FIFTH };
@@ -61,15 +60,20 @@ int main ( int cantArg, char* args[]){
     int beginYear = 0, endYear = 0;
 
     if ( cantArg < 4 ){
-        beginYear = MIN_YEAR;
-        endYear = MAX_YEAR;
+        beginYear = FREEYEAR;
+        endYear = FREEYEAR;
     } else if ( cantArg == 4 ){
+<<<<<<< HEAD
         if( !isNum( args[BEGINYEAR])){//Verifica que los parametros puedan ser pasados a int 
             fprintf( stderr, "\nError: invalid type of parameters\n");
             exit(ERR_PAR);
             }
         beginYear = atoi(args[BEGINYEAR]);
         endYear = MAX_YEAR;
+=======
+        beginYear = atoi(args[3]);
+        endYear = FREEYEAR;
+>>>>>>> 25727398359ba8eaadca9075874d93183299872c
     } else if ( cantArg == 5 ){
         if( !isNum( args[BEGINYEAR]) ||!isNum( args[ENDYEAR]) ){//Verifica que los parametros puedan ser pasados a int 
             fprintf( stderr, "\nError: invalid type of parameters\n");
@@ -178,14 +182,16 @@ char stringTrips3[MAXLENGTH];
 // Upload Query 1 
 TList1 q1 = query1(bikeRentalSystem);
 
-while ( q1 ){
-    fprintf ( files_CSV[FIRST], "%s;%ld;%ld;%ld\n" , q1->name, q1->cantMem, q1->cantCas, q1->cantTot);
-    sprintf (stringTrips, "%ld", q1->cantMem );
-    sprintf (stringTrips2, "%ld", q1->cantCas );
-    sprintf (stringTrips3, "%ld", q1->cantTot );
+toBeginQuery1 (TList q1);
+while ( hasNextQuery1(q1) ){
+    fprintf ( files_CSV[FIRST], "%s;%ld;%ld;%ld\n" , q1->iter->name, q1->iter->cantMem, q1->iter->cantCas, q1->iter->cantTot);
 
-    addHTMLRow(files_HTML[FIRST], q1->name, stringTrips, stringTrips2, stringTrips3 );
-    q1 = q1->tail;
+    sprintf (stringTrips, "%ld", q1->iter->cantMem );
+    sprintf (stringTrips2, "%ld", q1->iter->cantCas );
+    sprintf (stringTrips3, "%ld", q1->iter->cantTot );
+
+    addHTMLRow(files_HTML[FIRST], q1->iter->name, stringTrips, stringTrips2, stringTrips3 );
+    nextQuery1(q1);
 }
 
 //Upload Query 2 
