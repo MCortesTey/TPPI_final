@@ -19,7 +19,7 @@
 #define MAXLINEA 100
 #define MAXDATE 20 
 
-enum { ERR_PAR=1, ERR_YEAR, ERR_OPEN_FILE, ERR_ADD };
+enum { ERR_PAR=1, ERR_YEAR, ERR_OPEN_FILE, ERR_READ };
 
 
 #define HEADER1"bikeStation;memberTrips;casualTrips;allTrips"
@@ -32,12 +32,10 @@ enum { ERR_PAR=1, ERR_YEAR, ERR_OPEN_FILE, ERR_ADD };
 #define FILES_PARAMETERS 2 //Cant archivos que hay que leer 
 #define DAYS 7
 #define MAXLENGTH 10
-#define MAXLENGTH_DATE 20
 #define MIN_YEAR
 #define MAX_YEAR
 
 enum position { FIRST=0, SECOND, THIRD, FOURTH, FIFTH };
-
 
 void closeFilesHTML (  FILE *files[], int fileCount);//recive una lista de archivos y los cierra
 void closeFilesCSV (  FILE *files[], int fileCount);//recive una lista de archivos y los cierra
@@ -45,6 +43,8 @@ void printHeaders( FILE *files1[], char* headers[], int fileCount); // Recive do
 FILE * newfileCSV(const char * fileName, char * header );// Recive el nombre del .CSV y los titulos y lo abre, si falla retorna null
 int readStation ( const char * file, int station, int id, bikeRentalSystemADT bikeRentalSystem );
 int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalSystem );
+error_read_File ( bikeRentalSystemADT bikeRentalSystem, *  FILE *files[], int error, int count   );
+
 
 
 int main ( int cantArg, char* args[]){
@@ -81,7 +81,7 @@ FILE * files_data[] ={ trips, stations };
 // Manejo de errores III:  Verifico se se abrieron  bien los archivos .csv de lectura
 if ( files_data[FIRST] == NULL || files_data[SECOND] ){
     fprintf (stderr, "\nError: opening file\n");
-    closeFiles( files_data,FILES_PARAMETERS );
+    closeFilesCSV( files_data,FILES_PARAMETERS );
     exit(ERR_OPEN_FILE);
 }
 
@@ -94,7 +94,7 @@ bikeRentalSystemADT bikeRentalSystem=  newBikeRentalSystem(beginYear, endYear);
 if  ( bikeRentalSystem == NULL ||  errno == ENOMEM){
     errno=ENOMEM;//Por si entro por el NULL
     fprintf( stderr, "ERROR memory unavailable");
-    closeFiles( files_data, FILES_PARAMETERS );
+    closeFilesCSV( files_data, FILES_PARAMETERS );
     freebikeRentalSystem(bikeRentalSystem);
     exit(ENOMEM);
 }
@@ -102,22 +102,17 @@ if  ( bikeRentalSystem == NULL ||  errno == ENOMEM){
 //Lectura de estaciones de archivo
 int error = readStation(files_data[SECOND], NAME, ID, bikeRentalSystem);
 
-//Manejo de errores V: Verifico si se pudieron agrear las estaciones
-if ( error ){
-    freebikeRentalSystem(bikeRentalSystem);
-    closeFiles( files_data, FILES_PARAMETERS );
-    exit(ERR_ADD) ;
-}
+//Manejo de errores V: Verifico si se pudieron leer las estaciones
+
+error_read_File( bikeRentalSystem, files_data, FILES_PARAMETERS);
 
 //Lectura de viajes 
 error = readTrips( files_data[FIRST], MEMBERCOL, bikeRentalSystem);
 
-//Manejo de errores VI: Verifico si se pudieron agrear los viajes
-if ( error ){
-    freebikeRentalSystem(bikeRentalSystem);
-    closeFiles( files_data, FILES_PARAMETERS );
-    exit(ERR_ADD) ;
-}
+//Manejo de errores VI: Verifico si se pudieron leer los viajes
+
+error_read_File( bikeRentalSystem, files_data, FILES_PARAMETERS);
+
 
 
 
@@ -146,17 +141,12 @@ for (int i= 0; i<COUNT_Q;i++){
     if (files_CSV[i]==NULL)||(files_HTML[i]==NULL){
         closeFilesCSV( files_CSV, COUNT_Q);
         closeHTMLFiles( files_HTML, COUNT_Q);
-        closeFiles( files_data, FILES_PARAMETERS );
+        closeFilesCSV( files_data, FILES_PARAMETERS );
         fprintf( stderr, "ERROR in openning file");
         freebikeRentalSystem(bikeRentalSystem);
         exit(ERR_OPEN_FILE);
        }
 }
-
-
-
-
-
 
 
 
@@ -176,7 +166,6 @@ TList1 q1 = query1(bikeRentalSystem);
 
 while ( q1 ){
     fprintf ( files_CSV[FIRST], "%s;%ld;%ld;%ld\n" , q1->name, q1->cantMem, q1->cantCas, q1->cantTot);
-
     sprintf (stringTrips, "%ld", q1->cantMem );
     sprintf (stringTrips2, "%ld", q1->cantCas );
     sprintf (stringTrips3, "%ld", q1->cantTot );
@@ -270,6 +259,7 @@ void closeFilesCSV (  FILE *files[], int fileCount){
         }
     }
 }
+
 void closeFilesHTML (FILE *files[], int fileCount){
     for( int i=0;i<fileCount; i++)
     {
@@ -338,6 +328,13 @@ int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalS
     }
 
  return error;
+}
+
+
+error_read_File ( bikeRentalSystemADT bikeRentalSystem, *  FILE *files[], int error, int count   ){
+    freebikeRentalSystem(bikeRentalSystem);
+    closeFilesCSV( files_data, count );
+    exit(ERR_READ) ;
 }
 
 
