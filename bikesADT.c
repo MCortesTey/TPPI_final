@@ -89,6 +89,20 @@ static TNameId *updateArr(TNameId *arr, size_t dim, TList save, int cir){
     return arr;
 }
 
+
+
+int inRange( int year, int min, int max)
+{
+    return ( year>=min && year<=max);
+}
+
+
+int checkYear( int year , int min,  int max ){
+        return (  min==FREEYEAR ||  (year > =min && (  max==FREEYEAR || year<= max)));
+
+}
+
+
 static TList binarySearch(TNameId *arr, int low, int high, int id, int cir){ // funcion para buscar la st por el ID de forma eficiente
     while (low <= high){
         int mid = low + (high - low) / 2;
@@ -327,6 +341,8 @@ size_t getIdx ( bikeRentalSystemADT bikeRentalSystem ){
     }
     return bikeRentalSystem->iter->idx;
 }
+
+
 
 
 // Query 1: Total de Viajes iniciados por estacion
