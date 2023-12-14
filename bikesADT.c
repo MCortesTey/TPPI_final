@@ -161,7 +161,7 @@ static TList addStationRec(TList list, char *name, int id, int *added, int idx, 
     if (c == 0){
         return list;
     }
-    list->tail = addStationRec(list->tail, name, id, added, idx, &save);
+    list->tail = addStationRec(list->tail, name, id, added, idx, save);
     return list;
 }
 
@@ -337,7 +337,7 @@ size_t compare ( size_t elem1, size_t elem2 ){
     return elem1 - elem2;
 }
 
-static TList1 addRecq1 (TList1 list, char * name, size_t memTrips, size_t total ){
+static TList1 addRecQ1 (TList1 list, char * name, size_t memTrips, size_t total ){
     if ( list == NULL || compare(list->cantTot, total) < 0 ){
         TList1 new = malloc(sizeof(Tquery1));
         CHECKMEMORY(new)
@@ -461,16 +461,22 @@ char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem ){
 }
 
 
-TQuery4 * query4( bikeRentalSystemADT bikeRentalSystem, int *dim){
-    toBegin( bikeRentalSystem);
-    TQuery4  * ans = malloc(bikeRentalSystem->dim * sizeof(TQuery4));
+TQuery4 *query4(bikeRentalSystemADT bikeRentalSystem, int *dim){
+    toBegin(bikeRentalSystem);
+    TQuery4 *ans = malloc(bikeRentalSystem->dim * sizeof(TQuery4));
     CHECKMEMORY(ans);
     int i = 0;
-    while( hasNext( bikeRentalSystem)){
-        ans[i].nameSt = copyStr(getName(bikeRentalSystem));
-        CHECKMEMORY( ans->nameSt);
-        ans[i].nameEnd= copyStr( getPopularEnd( bikeRentalSystem) );
-        CHECKMEMORY( ans->nameEnd);
+    while (hasNext(bikeRentalSystem)){
+        ans[i].nameSt = malloc(strlen(getName(bikeRentalSystem)) + 1);
+        CHECKMEMORY(ans[i].nameSt);
+        strcpy(ans[i].nameSt, getName(bikeRentalSystem));
+        if (getPopularEnd(bikeRentalSystem) == NULL){ //caso por alguna razon sea una estacion sin salidas
+            ans[i].nameEnd = 0;
+        }else{
+            ans[i].nameEnd = malloc(strlen(getPopularEnd(bikeRentalSystem)) + 1);
+            CHECKMEMORY(ans->nameEnd);
+            strcpy(ans[i].nameEnd, getPopularEnd(bikeRentalSystem));
+        }
         ans[i++].countTrips = bikeRentalSystem->iter->tripsPopularEnd;
         next(bikeRentalSystem);
     }
@@ -478,14 +484,16 @@ TQuery4 * query4( bikeRentalSystemADT bikeRentalSystem, int *dim){
     return ans;
 }
 
-void freeQuery4 ( TQuery4 * vec , int dim){
-    for (int i = 0 ; i < dim; i++){
+void freeQuery4(TQuery4 *vec, int dim){
+    for (int i = 0; i < dim; i++){
         free(vec[i].nameSt);
-        free(vec[i].nameEnd);
+        if (vec[i].nameEnd != 0){
+            free(vec[i].nameEnd);
+        }
     }
+    free(vec);
     return;
 }
-
 
 // Query 5: Top 3 estaciones con mayor cantidad de viajes circulares por mes
 
