@@ -213,8 +213,9 @@ static void checkOldest(TList list, time_t date, struct tm datestruct, TList end
     }
     return;
 }
-static time_t dateControl(bikeRentalSystemADT system, char * strDate, int start, struct tm *candidate){// start = 1 si es de inicio, 0 si es de end
+static time_t dateControl(bikeRentalSystemADT system, char * strDate, int start, struct tm *candidate, int * cMon){// start = 1 si es de inicio, 0 si es de end
     struct tm date = mkTimeStruct(strDate);
+    (*cMon) = date.tm_mon;
     if (start){
         (*candidate) = date;
     }
@@ -257,17 +258,17 @@ static TTopMonth countCircularTop(TTopMonth mon, TList start){
 int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char * startDate, int isMember, char * endDate){
     TList start, end;
     struct tm oldestCandidate;
-    int cMon;
+    int cMonStart, cMonEnd;
 
-    time_t startTimeValue = dateControl(bikeRentalSystem, startDate, 1, &oldestCandidate);
-    time_t endTimeValue = dateControl(bikeRentalSystem, endDate, 0, &oldestCandidate);
+    time_t startTimeValue = dateControl(bikeRentalSystem, startDate, 1, &oldestCandidate, &cMonStart);
+    time_t endTimeValue = dateControl(bikeRentalSystem, endDate, 0, &oldestCandidate, &cMonEnd);
     if (startId == endId){ // si es viaje circular
         start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
         end = start;
         if (start == NULL || end == NULL)
             return 0;
-        if (difftime(endTimeValue, startTimeValue) > SECONDSINAMONTH){
-            bikeRentalSystem->circularTrips[cMon] = countCircularTop(bikeRentalSystem->circularTrips[cMon], start);
+        if ( cMonStart == cMonEnd && difftime(endTimeValue, startTimeValue) >= SECONDSINAMONTH){
+            bikeRentalSystem->circularTrips[cMonStart] = countCircularTop(bikeRentalSystem->circularTrips[cMonStart], start);
         }
     }else{
         start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
@@ -286,13 +287,6 @@ int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char *
     }
     return 1;
 }
-
-
-static struct  time_conversion( bikeRentalSystemADT bikeRental){
-
-}
-
-
 
 
 void toBegin (bikeRentalSystemADT bikeRentalSystem) {
