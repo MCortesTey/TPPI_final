@@ -267,7 +267,7 @@ int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char *
         end = start;
         if (start == NULL || end == NULL)
             return 0;
-        if ( cMonStart == cMonEnd && difftime(endTimeValue, startTimeValue) >= SECONDSINAMONTH){
+        if ( cMonStart == cMonEnd && difftime(endTimeValue, startTimeValue) <= SECONDSINAMONTH){
             bikeRentalSystem->circularTrips[cMonStart] = countCircularTop(bikeRentalSystem->circularTrips[cMonStart], start);
         }
     }else{
@@ -460,29 +460,29 @@ char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem ){
 }
 
 
-TList4 query4( bikeRentalSystemADT bikeRentalSystem){
+TQuery4 * query4( bikeRentalSystemADT bikeRentalSystem, int *dim){
     toBegin( bikeRentalSystem);
-    TList4 ans;
+    TQuery4  * ans = malloc(bikeRentalSystem->dim * sizeof(TQuery4));
+    CHECKMEMORY(ans);
+    int i = 0;
     while( hasNext( bikeRentalSystem)){
-        ans= malloc( sizeof( Tquery4));
-        CHECKMEMORY( ans);
-        ans->nameSt= copyStr( getName( bikeRentalSystem));
+        ans[i].nameSt = copyStr(getName(bikeRentalSystem));
         CHECKMEMORY( ans->nameSt);
-        ans->nameEnd= copyStr(  getPopularEnd( bikeRentalSystem) );
+        ans[i].nameEnd= copyStr( getPopularEnd( bikeRentalSystem) );
         CHECKMEMORY( ans->nameEnd);
-        ans->countTrips= bikeRentalSystem->iter->tripsPopularEnd;
-        ans=ans->tail;
-        next( bikeRentalSystem);
+        ans[i++].countTrips = bikeRentalSystem->iter->tripsPopularEnd;
+        next(bikeRentalSystem);
     }
+    (*dim) = i;
     return ans;
 }
 
-void freeQuery4 ( TList4 list ){
-    if ( list == NULL ){
-        return;
+void freeQuery4 ( TQuery4 * vec , int dim){
+    for (int i = 0 ; i < dim; i++){
+        free(vec->nameSt);
+        free(vec->nameEnd);
     }
-    freeQuery4(list->tail);
-    free(list);
+    return;
 }
 
 

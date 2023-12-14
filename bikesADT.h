@@ -36,10 +36,7 @@ typedef struct query4{
     char* nameSt; // nombre estacion inicio
     char* nameEnd;// nombre estacion fin
     size_t countTrips;// cantidad de viajes entre ambas estaciones
-    struct query4 *tail;
-}Tquery4;
-
-typedef Tquery4 * TList4;
+}TQuery4;
 
 typedef struct monthSt{
     char * FirstSt;
@@ -88,5 +85,5 @@ TList2 query2( bikeRentalSystemADT bikeRentalSystem );
 
 TDayTrips * query3(bikeRentalSystemADT bikeRentalSystem  );
 
-TList4 query4( bikeRentalSystemADT bikeRentalSystem);
+TQuery4 *query4(bikeRentalSystemADT bikeRentalSystem, int *dim);
 #endif
