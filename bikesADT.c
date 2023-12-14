@@ -210,8 +210,8 @@ static void checkOldest(TList list, time_t date, struct tm datestruct, TList end
     }
     return;
 }
-static time_t dateControl(bikeRentalSystemADT system, int minutes, int hour, int day, int month, int year, int start, struct tm *candidate){// start = 1 si es de inicio, 0 si es de end
-    struct tm date = mkTimeStruct(minutes, hour, day, month, year);
+static time_t dateControl(bikeRentalSystemADT system, char * strDate, int start, struct tm *candidate){// start = 1 si es de inicio, 0 si es de end
+    struct tm date = mkTimeStruct(strDate);
     if (start){
         (*candidate) = date;
     }
@@ -251,22 +251,20 @@ static TTopMonth countCircularTop(TTopMonth mon, TList start){
     return mon;
 }
 
-int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, int iminutes, int ihour, int iday, int imonth, int iyear, int isMember, int fminutes, int fhour, int fday, int fmonth, int fyear){
+int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char * startDate, int isMember, char * endDate){
     TList start, end;
     struct tm oldestCandidate;
-    
+    int cMon;
 
-
-
-    time_t startTimeValue = dateControl(bikeRentalSystem, iminutes, ihour, iday, imonth, iyear, 1, &oldestCandidate);
-    time_t endTimeValue = dateControl(bikeRentalSystem, fminutes, fhour, fday, fmonth, fyear, 0, &oldestCandidate);
+    time_t startTimeValue = dateControl(bikeRentalSystem, startDate, 1, &oldestCandidate);
+    time_t endTimeValue = dateControl(bikeRentalSystem, endDate, 0, &oldestCandidate);
     if (startId == endId){ // si es viaje circular
         start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
         end = start;
         if (start == NULL || end == NULL)
             return 0;
         if (difftime(endTimeValue, startTimeValue) > SECONDSINAMONTH){
-            bikeRentalSystem->circularTrips[imonth - 1] = countCircularTop(bikeRentalSystem->circularTrips[imonth - 1], start);
+            bikeRentalSystem->circularTrips[cMon] = countCircularTop(bikeRentalSystem->circularTrips[cMon], start);
         }
     }else{
         start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
@@ -405,7 +403,7 @@ TList2 query2( bikeRentalSystemADT bikeRentalSystem ){
 
         strcpy(ans->nameSt, getName(bikeRentalSystem));
         strcpy(ans->nameEnd, getPopularEnd(bikeRentalSystem));
-        ans->oldestTrip = bikeRentalSystem->iter->oldestTrip;
+        ans->oldestTrip = bikeRentalSystem->iter->oldestStruct;
 
         ans = ans->tail;
         next(bikeRentalSystem);
@@ -427,11 +425,10 @@ TDayTrips * query3(bikeRentalSystemADT bikeRentalSystem ){
     CHECKMEMORY( ans);
     if ( errno == ENOMEM ) 
         return NULL;
-    for ( int i=0 ; i<DAYS ;i++){
-        for ( int j=1; j<DAYS ; j++){
+    int i = 0;
+    for ( int j=1 ; i<DAYS ;j++){
         ans[i].started= bikeRentalSystem->days[j].started;
-        ans[i].ended= bikeRentalSystem->days[j].ended;
-        }
+        ans[i++].ended= bikeRentalSystem->days[j].ended;
     } 
     ans[i].started= bikeRentalSystem->days[0].started;
     ans[i].ended= bikeRentalSystem->days[0].ended;
