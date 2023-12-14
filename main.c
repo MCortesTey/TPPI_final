@@ -40,8 +40,8 @@ void closeFilesHTML (  FILE *files[], int fileCount);//recive una lista de archi
 void closeFilesCSV (  FILE *files[], int fileCount);//recive una lista de archivos y los cierra
 void printHeaders( FILE *files1[], char* headers[], int fileCount); // Recive dos listas de archivos con el mismo largo y copia los mimos titulos en orden para cada archivo 
 FILE * newfileCSV(const char * fileName, char * header );// Recive el nombre del .CSV y los titulos y lo abre, si falla retorna null
-int readStation ( const char * file, int station, int id, bikeRentalSystemADT bikeRentalSystem );
-int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalSystem );
+int readStation ( const char * file, int station, int id, bikeRentalSystemADT bikeRentalSystem ); // lee el archivo de estaciones
+int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalSystem ); // lee el archivo de trips
 error_read_File ( bikeRentalSystemADT bikeRentalSystem, *  FILE *files[], int error, int count   );
 
 
@@ -151,19 +151,14 @@ for (int i= 0; i<COUNT_Q;i++){
 
 
 
-
-//Arrancamos el iterador 
-toBegin( newBikeRentalSystem);
-
+// Upload Query 1 
 char stringTrips[MAXLENGTH];
 char stringTrips2[MAXLENGTH];
 char stringTrips3[MAXLENGTH];
 
-
-// Upload Query 1 
 TList1 q1 = query1(bikeRentalSystem);
 
-toBeginQuery1 (TList q1);
+toBeginQuery1 (TList1 q1);
 while ( hasNextQuery1(q1) ){
     fprintf ( files_CSV[FIRST], "%s;%ld;%ld;%ld\n" , q1->iter->name, q1->iter->cantMem, q1->iter->cantCas, q1->iter->cantTot);
 
@@ -334,7 +329,7 @@ int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalS
 }
 
 
-error_read_File ( bikeRentalSystemADT bikeRentalSystem, *  FILE *files[], int error, int count   ){
+error_read_File ( bikeRentalSystemADT bikeRentalSystem, *  FILE *files[], int error, int count ){
     freebikeRentalSystem(bikeRentalSystem);
     closeFilesCSV( files_data, count );
     exit(ERR_READ) ;
