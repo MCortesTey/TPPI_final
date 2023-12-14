@@ -2,6 +2,7 @@
 #include "htmlTable.h"
 #include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 #include "bikesADT.h"
 #include "htmlTable.h"
 
@@ -16,6 +17,12 @@
 #define ID 3
 #define MEMBERCOL 1
 
+#define MAXLINEA 100
+#define MAXDATE 20 
+
+enum { ERR_PAR=1, ERR_YEAR, ERR_OPEN_FILE, ERR_ADD };
+
+
 #define HEADER1"bikeStation;memberTrips;casualTrips;allTrips"
 #define HEADER2"bikeStation;bikeEndStation;oldestDateTime"
 #define HEADER3"weekDay;startedTrips;endedTrips"
@@ -29,26 +36,23 @@
 #define MAXLENGTH_DATE 20
 #define MIN_YEAR
 #define MAX_YEAR
-#define CHECKMEMORY(ptr) if (ptr == NULL){\
-                            fprintf(stderr, "\nError: memory failure\n");\
-                            return 1;\
-                          }\
 
 enum position { FIRST=0, SECOND, THIRD, FOURTH, FIFTH };
-
 
 
 void closeFilesHTML (  FILE *files[], int fileCount);//recive una lista de archivos y los cierra
 void closeFilesCSV (  FILE *files[], int fileCount);//recive una lista de archivos y los cierra
 void printHeaders( FILE *files1[], char* headers[], int fileCount); // Recive dos listas de archivos con el mismo largo y copia los mimos titulos en orden para cada archivo 
 FILE * newfileCSV(const char * fileName, char * header );// Recive el nombre del .CSV y los titulos y lo abre, si falla retorna null
+int readStation ( const char * file, int station, int id, bikeRentalSystemADT bikeRentalSystem );
+int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalSystem );
 
 
 int main ( int cantArg, char* args[]){
 //Manejo de errores I: Verifico si se introdujo una cantidad valida de parametros 
     if ( cantArg > 5 || cantArg < 3 ){
         fprintf( stderr, "\nError: invalid amount of parameters\n");
-        exit(1);
+        exit(ERR_PAR);
     }
     int beginYear = 0, endYear = 0;
     if ( cantArg < 4 ){
@@ -64,7 +68,7 @@ int main ( int cantArg, char* args[]){
 //Manejo de errores II: Verifico que los a;os introducidos sean aptos
         if ( beginYear > endYear ){
             fprintf(stderr, "\nError: Year2<Year1\n");
-            return 1;
+            exit(ERR_YEAR);
         }
     }
 
@@ -79,19 +83,21 @@ FILE * files_data[] ={ trips, stations };
 if ( files_data[FIRST] == NULL || files_data[SECOND] ){
     fprintf (stderr, "\nError: opening file\n");
     closeFiles( files_data,FILES_PARAMETERS );
-    exit(1);
+    exit(ERR_OPEN_FILE);
 }
 
 //Inicializacion del TAD
+errno= 0; // Lo seteo en 0 para que el unico error en el el errno sea ENOMEM 
 bikeRentalSystemADT bikeRentalSystem=  newBikeRentalSystem(beginYear, endYear);
 
 
 //Manejo de errores IV: Verifico se inicializo correctametne el TAD debido al espacio de memoria 
 if  ( bikeRentalSystem == NULL ||  errno == ENOMEM){
+    errno=ENOMEM;//Por si entro por el NULL
     fprintf( stderr, "ERROR memory unavailable");
     closeFiles( files_data, FILES_PARAMETERS );
     freebikeRentalSystem(bikeRentalSystem);
-    exit(1);
+    exit(ENOMEM);
 }
 
 //Lectura de estaciones de archivo
@@ -101,17 +107,17 @@ int error = readStation(files_data[SECOND], NAME, ID, bikeRentalSystem);
 if ( error ){
     freebikeRentalSystem(bikeRentalSystem);
     closeFiles( files_data, FILES_PARAMETERS );
-    exit(1) ;
+    exit(ERR_ADD) ;
 }
 
 //Lectura de viajes 
 error = readTrips( files_data[FIRST], MEMBERCOL, bikeRentalSystem);
 
-//Manejo de errores VI: Verifico si se pudieron agrear las estaciones
+//Manejo de errores VI: Verifico si se pudieron agrear los viajes
 if ( error ){
     freebikeRentalSystem(bikeRentalSystem);
     closeFiles( files_data, FILES_PARAMETERS );
-    exit(1) ;
+    exit(ERR_ADD) ;
 }
 
 
@@ -124,6 +130,7 @@ FILE * query3_CSV= newfileCSV( "query3.csv",HEADER3);
 FILE * query4_CSV= newfileCSV( "query4.csv",HEADER4);
 FILE * query5_CSV= newfileCSV( "query5.csv",HEADER5);
 FILE * files_CSV[]={query1_CSV,query2_CSV,query3_CSV,query4_CSV,query5_CSV};
+
 
 //HTML
 htmlTable query1_HTML= newTable( "query1.html", 4, "bikeStation", "memberTrips", "casualTrips", "allTrips" );
@@ -143,13 +150,9 @@ for (int i= 0; i<COUNT_Q;i++){
         closeFiles( files_data, FILES_PARAMETERS );
         fprintf( stderr, "ERROR in openning file");
         freebikeRentalSystem(bikeRentalSystem);
-        exit(1);
+        exit(ERR_OPEN_FILE);
        }
 }
-
-
-
-
 
 
 
@@ -241,7 +244,6 @@ return 0;
 
 
 
-
 //Funcion que crea archivo nuevo de csv y verifica si se creo bien
 // se ingresan los headers  por parametro 
 FILE * newfileCSV(const char * fileName, char * header )
@@ -289,5 +291,63 @@ void closeFilesHTML (FILE *files[], int fileCount){
 }
 
 
+
+
+
+int readStation ( const char * file, int station, int id, bikeRentalSystemADT bikeRentalSystem ){
+    char line[MAXLINEA], *token, *stationName;
+    int error = 0, stationId, i=0;
+
+    while ( fgets(line, sizeof(line), file) != NULL ){
+        token = strtok(line, DELIM);
+
+        for (i=0; token != NULL; i++) {
+            if ( i == station ){
+                stationName = token;
+
+            } else if ( i == id ){
+                stationId = atoi(token);
+
+            } 
+            token=strtok(NULL, DELIM);
+        }
+        error = addStation(bikeRentalSystem, stationName, stationId );
+    }
+    return error;
+}
+
+
+int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalSystem ){
+    char line[MAXLINEA];
+    char date[MAXDATE], endDate[MAXDATE]; //yyyy-MM-dd HH:mm:ss
+    int error =0;
+    int Id, endId, membership, ; 
+
+    while( fgets ( line, sizeof( line), file )!=NULL){
+        char * token  = strtok( line, DELIM);
+        while( token != NULL ) {
+            strncpy( date, token);
+            token=strtok(NULL, DELIM);
+
+            Id = atoi( token);
+            token=strtok(NULL, DELIM);
+
+            strncpy( endDate, token);
+            token=strtok(NULL, DELIM);
+
+            endId = atoi( token);
+            token=strtok(NULL, DELIM);
+
+            if ( membercol) 
+                    token=strtok(NULL, DELIM); //Si member col es 1 significa que no es esta columna  (voy al siguiente) 
+
+            membership  = (strcmp(  token , MEMBER) == 0); //verificar si membership se manejaba con 1 y 0 ;
+                                                        
+        error= addTrip( bikeRentalSystem, Id, endId, date, membership, endDate); //Hay que corregir la funcion addtrip para que no mezcle front y back y tome el strn como parametro y lo divida en tiempo en el back 
+        }   
+    }
+
+ return error;
+}
 
 
