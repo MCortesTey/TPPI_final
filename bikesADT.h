@@ -95,7 +95,7 @@ void * nextQuery1 ( TList q1 );
 
 char * getOldestEnd (bikeRentalSystemADT bikeRentalSystem );
 
-Tquery2 * query2( bikeRentalSystemADT bikeRentalSystem );
+Tquery2 * query2( bikeRentalSystemADT bikeRentalSystem, int * dim );
 
 TDayTrips * query3(bikeRentalSystemADT bikeRentalSystem  );
 

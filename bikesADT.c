@@ -11,7 +11,7 @@ typedef struct TStation{
     int id;
     int idx; //indice correspondiente en la matriz de trips
     time_t oldestTrip; //tiempo del viaje mas antiguo
-    struct tm oldestStruct;  
+    struct tm * oldestStruct;  
     char * oldestEnd; //nombre estacion de fin viaje mas antiguio
     size_t tripsPopularEnd; //cantidad de la ruta mas visitado
     char * popularEnd;
@@ -162,6 +162,7 @@ static TList addStationRec(TList list, char *name, int id, int *added, int idx, 
         new->memTrips = 0;
         new->oldestTrip = 0; // no estoy seguro como se inicializa aun
         new->oldestEnd = 0;
+        new->oldestStruct = malloc(sizeof(struct tm));
         new->tripsPopularEnd = 0;
         new->popularEnd = 0;
         new->tail = list;
@@ -219,7 +220,7 @@ static void countToDay(bikeRentalSystemADT system, int wDay, int flagStart ){
 static void checkOldest(TList list, time_t date, struct tm datestruct, TList end){
     if (list->oldestTrip == 0 || difftime(list->oldestTrip, date) > 0){ // si la fecha a registrar es mas vieja, pasa a ser la oldest
         list->oldestTrip = date;
-        list->oldestStruct = datestruct;
+        (*list->oldestStruct) = datestruct;
         list->oldestEnd = end->name;
     }
     return;
@@ -421,22 +422,25 @@ char * getOldestEnd (bikeRentalSystemADT bikeRentalSystem ){
     return bikeRentalSystem->iter->oldestEnd;
 }
 
-Tquery2 * query2 ( bikeRentalSystemADT bikeRentalSystem, int *dim){
-    Tquery2 * ans = calloc(1, bikeRentalSystem->dim * sizeof(Tquery2));
+Tquery2 *query2(bikeRentalSystemADT bikeRentalSystem, int *dim){
+    Tquery2 *ans = calloc(1, bikeRentalSystem->dim * sizeof(Tquery2));
     CHECKMEMORY(ans);
 
     toBegin(bikeRentalSystem);
     int i = 0;
-    while ( hasNext (bikeRentalSystem)){
+    while ( hasNext(bikeRentalSystem)){
         ans[i].nameSt = malloc(strlen(getName(bikeRentalSystem)) + 1);
         CHECKMEMORY(ans[i].nameSt);
         strcpy(ans[i].nameSt, getName(bikeRentalSystem));
-
-        ans[i].nameEnd = malloc(strlen(getOldestEnd(bikeRentalSystem)) + 1);
-        CHECKMEMORY(ans[i].nameEnd);
-        strcpy(ans[i].nameEnd, getOldestEnd(bikeRentalSystem));
-
-        ans[i++].oldestTrip = bikeRentalSystem->iter->oldestStruct;
+        if (getOldestEnd(bikeRentalSystem) == NULL){
+            ans[i].nameEnd = 0;
+            ans[i++].oldestTrip = 0;
+        }else{
+            ans[i].nameEnd = malloc(strlen(getOldestEnd(bikeRentalSystem)) + 1);
+            CHECKMEMORY(ans[i].nameEnd);
+            strcpy(ans[i].nameEnd, getOldestEnd(bikeRentalSystem));
+            ans[i++].oldestTrip = bikeRentalSystem->iter->oldestStruct;
+        }
 
         next(bikeRentalSystem);
     }
@@ -444,8 +448,8 @@ Tquery2 * query2 ( bikeRentalSystemADT bikeRentalSystem, int *dim){
     return ans;
 }
 
-void freeQuery2 ( Tquery2 q2, int dim ){
-    for (int i=0; i<dim; i++){
+void freeQuery2(Tquery2 *q2, int dim){
+    for (int i = 0; i < dim; i++){
         free(q2[i].nameSt);
         free(q2[i].nameEnd);
     }
@@ -459,7 +463,7 @@ TDayTrips * query3(bikeRentalSystemADT bikeRentalSystem ){
     if ( errno == ENOMEM ) 
         return NULL;
     int i = 0;
-    for ( int j=1 ; i<DAYS ;j++){
+    for ( int j=1 ; j<DAYS ;j++){
         ans[i].started= bikeRentalSystem->days[j].started;
         ans[i++].ended= bikeRentalSystem->days[j].ended;
     } 
@@ -486,7 +490,6 @@ char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem ){
     }
     return bikeRentalSystem->iter->popularEnd;
 }
-
 
 TQuery4 *query4(bikeRentalSystemADT bikeRentalSystem, int *dim){
     toBegin(bikeRentalSystem);
@@ -566,6 +569,7 @@ static void freeStations(TList list){
     if (list == NULL){
         return;
     }
+    free(list->oldestStruct);
     freeStations(list->tail);
     free(list);
 }
