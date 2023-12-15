@@ -83,8 +83,6 @@ size_t getIdx ( bikeRentalSystemADT bikeRentalSystem );
 // retorna nombre de estacion de fin mas popular
 char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem );
 
-Tquery1 * query1 ( bikeRentalSystemADT bikeRentalSystem );
-
 // apunta al primer elemento de query1
 void toBeginQuery1 ( Tquery1 * q1 );
 
@@ -98,7 +96,7 @@ void *nextQuery1(Tquery1 * q1);
 char * getOldestEnd (bikeRentalSystemADT bikeRentalSystem );
 
 // queries
-TList1 query1( bikeRentalSystemADT bikeRentalSystem );
+Tquery1 * query1 ( bikeRentalSystemADT bikeRentalSystem );
 
 Tquery2 * query2( bikeRentalSystemADT bikeRentalSystem, int * dim );
 
