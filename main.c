@@ -163,7 +163,7 @@ char stringTrips[MAXLENGTH];
 char stringTrips2[MAXLENGTH];
 char stringTrips3[MAXLENGTH];
 
-TList1 q1 = query1(bikeRentalSystem);
+Tquery1 * q1 = query1(bikeRentalSystem);
 
 toBeginQuery1 (q1);
 while ( hasNextQuery1(q1) ){

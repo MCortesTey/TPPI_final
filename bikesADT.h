@@ -9,22 +9,20 @@
 #define MONTHS 12
 #define FREEYEAR -1
 
-typedef struct query1 {
-    char * name; // nombre de la estacion
+typedef struct query1{
+    char *name;     // nombre de la estacion
     size_t cantMem; // cantidad de viajes empezados por miembros
     size_t cantCas; // cantidad de viajes empezados por casuales
     size_t cantTot; // cantidad de viajes empezados totales
-    struct query1 * tail;
-} Tquery1node;
+    struct query1 *tail;
+} TNode1;
 
-typedef Tquery1node * TNode1;
+typedef TNode1 *TList1;
 
 typedef struct query1{
-    Tquery1node * first;
-    Tquery1node * iter;
+    TList1 first;
+    TList1 iter;
 } Tquery1;
-
-typedef Tquery1 * TList1;
 
 typedef struct query2 {
     char * nameSt; // nombre de la estacion de inicio
@@ -71,7 +69,7 @@ int hasNext (bikeRentalSystemADT bikeRentalSystem);
 void * next (bikeRentalSystemADT bikeRentalSystem);
 
 // libera el conjunto
-void freebikeRentalSystem ( bikeRentalSystemADT bikeRentalSystem );
+void freeBikeRentalSystem ( bikeRentalSystemADT bikeRentalSystem );
 
 // retorna nombre de la estacion donde iter apunta
 char * getName (bikeRentalSystemADT bikeRentalSystem);
@@ -84,16 +82,16 @@ size_t getIdx ( bikeRentalSystemADT bikeRentalSystem );
 
 char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem );
 
-TList1 query1( bikeRentalSystemADT bikeRentalSystem );
+Tquery1 * query1 ( bikeRentalSystemADT bikeRentalSystem );
 
 // apunta al primer elemento de query1
-void toBeginQuery1 ( TList q1 ); 
+void toBeginQuery1 ( Tquery1 * q1 );
 
 // retorna 1 si hay elemento siguiente 
-int hasNextQuery1 ( TList q1 );
+int hasNextQuery1( Tquery1 * q1);
 
 //apunta al siguiente elemento
-void * nextQuery1 ( TList q1 );
+void *nextQuery1(Tquery1 * q1);
 
 char * getOldestEnd (bikeRentalSystemADT bikeRentalSystem );
 
@@ -103,7 +101,7 @@ TDayTrips * query3(bikeRentalSystemADT bikeRentalSystem  );
 
 TQuery4 *query4(bikeRentalSystemADT bikeRentalSystem, int *dim);
 
-void freeQuery1 ( TList1 list);
+void freeQuery1 ( Tquery1 * q1);
 
 void freeQuery2(Tquery2 *q2, int dim2);
 
