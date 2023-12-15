@@ -172,9 +172,14 @@ int dim2;
 Tquery2 * q2 = query2( bikeRentalSystem, &dim2);
 
 for ( int i=0; i < dim2 ; i++){
-    strftime(dayString, MAXLENGTH_DATE , "%x %H:%M",  q2[i].oldestTrip );
-    fprintf( files_CSV[SECOND],"%s;%s;%s\n" ,q2[i].nameSt, q2[i].nameEnd, dayString);
-    addHTMLRow  ( files_HTML[SECOND], q2[i].nameSt, q2[i].nameEnd, dayString);
+    if (q2[i].nameEnd != NULL){
+        strftime(dayString, MAXLENGTH_DATE, "%x %H:%M", q2[i].oldestTrip);
+        fprintf( files_CSV[SECOND],"%s;%s;%s\n" ,q2[i].nameSt, q2[i].nameEnd, dayString);
+        addHTMLRow  ( files_HTML[SECOND], q2[i].nameSt, q2[i].nameEnd, dayString);
+    } else{
+        fprintf(files_CSV[SECOND], "%s;%s;%s\n", q2[i].nameSt, "empty", "empty");
+        addHTMLRow(files_HTML[SECOND], q2[i].nameSt, "empty", "empty");
+    }
 }
 
 
@@ -195,10 +200,16 @@ for ( int i=0;i<DAYS;i++){
 int dim4;
 TQuery4 * q4 = query4 ( bikeRentalSystem , &dim4);
 for (int i = 0 ; i < dim4 ; i++){
-    fprintf( files_CSV[FOURTH], "%s;%s;%ld\n", q4[i].nameSt , q4[i].nameEnd, q4[i].countTrips );
-
-    sprintf(stringTrips, "%ld", q4[i].countTrips );
-    addHTMLRow ( files_HTML[FOURTH], q4[i].nameSt, q4[i].nameEnd, stringTrips );
+    if( q4[i].nameEnd != NULL ){
+        fprintf( files_CSV[FOURTH], "%s;%s;%ld\n", q4[i].nameSt , q4[i].nameEnd, q4[i].countTrips );
+        sprintf(stringTrips, "%ld", q4[i].countTrips );
+        addHTMLRow ( files_HTML[FOURTH], q4[i].nameSt, q4[i].nameEnd, stringTrips );
+    }else{
+        fprintf(files_CSV[FOURTH], "%s;%s;%ld\n", q4[i].nameSt, "empty", q4[i].countTrips);
+        sprintf(stringTrips, "%ld", q4[i].countTrips);
+        addHTMLRow(files_HTML[FOURTH], q4[i].nameSt, "empty", stringTrips);
+    }
+    
 }
 
 // Upload Query 5
