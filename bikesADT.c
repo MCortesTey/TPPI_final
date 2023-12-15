@@ -95,7 +95,7 @@ int inRange( int year, int min, int max)
 
 
 int checkYear( int year , int min,  int max ){
-        return (  min==FREEYEAR ||  (year > =min && (  max==FREEYEAR || year<= max)));
+        return (  min==FREEYEAR ||  (year >= min && (  max==FREEYEAR || year <= max)));
 
 }
 

@@ -7,6 +7,7 @@
 #define __bikesADT_h
 #define DAYS 7 
 #define MONTHS 12
+#define FREEYEAR -1
 
 typedef struct query1 {
     char * name; // nombre de la estacion
@@ -16,17 +17,17 @@ typedef struct query1 {
     struct query1 * tail;
 } Tquery1node;
 
-typedef struct query1{
-    Tquery1node * first;
-    Tquery1node *  iter;
-} Tquery1;
+typedef Tquery1node * TList1;
 
-typedef Tquery1 * TList1;
+typedef struct query1{
+    TList1 first;
+    TList1 iter;
+} Tquery1;
 
 typedef struct query2 {
     char * nameSt; // nombre de la estacion de inicio
     char * nameEnd; // nombre de la esatcion de fin
-    struct tm oldestTrip; // fecha y hora del viaje mas antiguo
+    struct tm * oldestTrip; // fecha y hora del viaje mas antiguo
 } Tquery2;
 
 typedef struct dayTrips{

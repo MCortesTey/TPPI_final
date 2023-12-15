@@ -33,7 +33,6 @@ enum { ERR_PAR=1, ERR_YEAR, ERR_OPEN_FILE, ERR_READ };
 #define MAXLENGTH 10
 #define MAXLINE 100
 #define MAXLENGTH_DATE 20
-#define FREEYEAR -1
 
 
 enum position { FIRST=0, SECOND, THIRD, FOURTH, FIFTH };
