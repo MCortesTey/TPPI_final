@@ -95,7 +95,7 @@ if  ( bikeRentalSystem == NULL ||  errno == ENOMEM){
     errno=ENOMEM;//Por si entro por el NULL
     fprintf( stderr, "\nError: memory unavailable\n");
     closeFilesCSV( files_data, FILES_READ );
-    freebikeRentalSystem(bikeRentalSystem);
+    freeBikeRentalSystem(bikeRentalSystem);
     exit(ENOMEM);
 }
 
@@ -151,7 +151,7 @@ char stringTrips[MAXLENGTH];
 char stringTrips2[MAXLENGTH];
 char stringTrips3[MAXLENGTH];
 
-Tquery1 * q1 = query1(bikeRentalSystem);
+TQuery1 * q1 = query1(bikeRentalSystem);
 
 toBeginQuery1 (q1);
 while ( hasNextQuery1(q1) ){
@@ -169,7 +169,7 @@ while ( hasNextQuery1(q1) ){
 char dayString[MAXLENGTH_DATE];
 
 int dim2;
-Tquery2 * q2 = query2( bikeRentalSystem, &dim2);
+TQuery2 * q2 = query2( bikeRentalSystem, &dim2);
 
 for ( int i=0; i < dim2 ; i++){
     if (q2[i].nameEnd != NULL){

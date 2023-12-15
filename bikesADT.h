@@ -9,12 +9,12 @@
 #define MONTHS 12
 #define FREEYEAR -1
 
-typedef struct query1{
+typedef struct querynode1{
     char *name;     // nombre de la estacion
     size_t cantMem; // cantidad de viajes empezados por miembros
     size_t cantCas; // cantidad de viajes empezados por casuales
     size_t cantTot; // cantidad de viajes empezados totales
-    struct query1 *tail;
+    struct querynode1 *tail;
 } TNode1;
 
 typedef TNode1 *TList1;
@@ -22,13 +22,13 @@ typedef TNode1 *TList1;
 typedef struct query1{
     TList1 first;
     TList1 iter;
-} Tquery1;
+} TQuery1;
 
 typedef struct query2 {
     char * nameSt; // nombre de la estacion de inicio
     char * nameEnd; // nombre de la esatcion de fin
     struct tm * oldestTrip; // fecha y hora del viaje mas antiguo
-} Tquery2;
+} TQuery2;
 
 typedef struct dayTrips{
     size_t started;
@@ -84,29 +84,29 @@ size_t getIdx ( bikeRentalSystemADT bikeRentalSystem );
 char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem );
 
 // apunta al primer elemento de query1
-void toBeginQuery1 ( Tquery1 * q1 );
+void toBeginQuery1 ( TQuery1 * q1 );
 
 // retorna 1 si hay elemento siguiente 
-int hasNextQuery1( Tquery1 * q1);
+int hasNextQuery1( TQuery1 * q1);
 
 //apunta al siguiente elemento
-void *nextQuery1(Tquery1 * q1);
+void *nextQuery1(TQuery1 * q1);
 
 // retorna nombre de estacion de fin mas antigua
 char * getOldestEnd (bikeRentalSystemADT bikeRentalSystem );
 
 // queries
-Tquery1 * query1 ( bikeRentalSystemADT bikeRentalSystem );
+TQuery1 * query1 ( bikeRentalSystemADT bikeRentalSystem );
 
-Tquery2 * query2( bikeRentalSystemADT bikeRentalSystem, int * dim );
+TQuery2 * query2( bikeRentalSystemADT bikeRentalSystem, int * dim );
 
 TDayTrips * query3(bikeRentalSystemADT bikeRentalSystem  );
 
 TQuery4 *query4(bikeRentalSystemADT bikeRentalSystem, int *dim);
 
-void freeQuery1 ( Tquery1 * q1);
+void freeQuery1 ( TQuery1 * q1);
 
-void freeQuery2(Tquery2 *q2, int dim2);
+void freeQuery2(TQuery2 *q2, int dim2);
 
 void freeQuery3(TDayTrips *vec);
 

@@ -3,7 +3,7 @@
 #include <string.h>
 #include <errno.h>
 #include "bikesADT.h"
-#define CHECKMEMORY(ptr) if ( ptr == NULL ) { return NULL; }
+#define CHECKMEMORY(ptr) if ( (ptr) == NULL ) { return NULL; }
 #define SECONDSINAMONTH (30*24*60*60)
 
 typedef struct TStation{
@@ -377,8 +377,8 @@ static TList1 addRecQ1(TList1 list, char *name, size_t memTrips, size_t total){
     return list;
 }
 
-Tquery1 * query1 ( bikeRentalSystemADT bikeRentalSystem ){
-    Tquery1 * ans = calloc(1, sizeof(Tquery1));
+TQuery1 * query1 ( bikeRentalSystemADT bikeRentalSystem ){
+    TQuery1 * ans = calloc(1, sizeof(TQuery1));
     CHECKMEMORY(query1)
     toBegin(bikeRentalSystem);
     while ( hasNext(bikeRentalSystem) ){
@@ -402,21 +402,21 @@ void freeList1 ( TList1 list ){
     free(list);
 }
 
-void freeQuery1 ( Tquery1 * q1){
+void freeQuery1 ( TQuery1 * q1){
     freeList1(q1->first);
     free(q1);
 }
 
-void toBeginQuery1 ( Tquery1 * q1 ){
+void toBeginQuery1 ( TQuery1 * q1 ){
     q1->iter = q1->first;
     return;
 }
 
-int hasNextQuery1( Tquery1 * q1){
+int hasNextQuery1( TQuery1 * q1){
     return q1->iter != NULL;
 }
 
-void *nextQuery1(Tquery1 * q1){
+void *nextQuery1(TQuery1 * q1){
     q1->iter = q1->iter->tail;
 }
 
@@ -433,8 +433,8 @@ char * getOldestEnd (bikeRentalSystemADT bikeRentalSystem ){
     return bikeRentalSystem->iter->oldestEnd;
 }
 
-Tquery2 *query2(bikeRentalSystemADT bikeRentalSystem, int *dim2){
-    Tquery2 *ans = calloc(1, bikeRentalSystem->dim * sizeof(Tquery2));
+TQuery2 *query2(bikeRentalSystemADT bikeRentalSystem, int *dim){
+    TQuery2 *ans = calloc(1, bikeRentalSystem->dim * sizeof(TQuery2));
     CHECKMEMORY(ans);
 
     toBegin(bikeRentalSystem);
@@ -455,12 +455,12 @@ Tquery2 *query2(bikeRentalSystemADT bikeRentalSystem, int *dim2){
 
         next(bikeRentalSystem);
     }
-    (*dim2) = i;
+    (*dim) = i;
     return ans;
 }
 
-void freeQuery2(Tquery2 *q2, int dim2){
-    for (int i = 0; i < dim2; i++){
+void freeQuery2(TQuery2 *q2, int dim){
+    for (int i = 0; i < dim; i++){
         free(q2[i].nameSt);
         free(q2[i].nameEnd);
     }
@@ -490,9 +490,9 @@ void freeQuery3 ( TDayTrips * vec ){
 // Query 4: Ruta mas popular por estación
 // - orden alfabetico
 
-static char * copyStr(const char * s) {
-    return strcpy(malloc(strlen(s)+1), s);
-}
+// static char * copyStr(const char * s) {
+//     return strcpy(malloc(strlen(s)+1), s);
+// }
 
 
 char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem ){
@@ -589,6 +589,13 @@ static void freeMonths(TTopMonth *months){
     for (int i = 0; i < MONTHS; i++){
         free(months[i].Top);
     }
+}
+
+void freeTrips(size_t **matrix, int dim){
+    for (int i = 0; i < dim; i++){
+        free(matrix[i]);
+    }
+    free(matrix);
 }
 
 void freeBikeRentalSystem(bikeRentalSystemADT bikeRentalSystem){
