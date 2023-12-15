@@ -37,13 +37,13 @@ enum position { FIRST=0, SECOND, THIRD, FOURTH, FIFTH }; // posicion para buscar
 enum arguments { PROGRAM=0, TRIPS, STATIONS, BEGINYEAR, ENDYEAR};
 
 
-void closeFilesHTML (  FILE *files[], int fileCount);//recibe una lista de archivos HTML y los cierra
+void closeFilesHTML (  htmlTable files[], int fileCount);//recibe una lista de archivos HTML y los cierra
 void closeFilesCSV (  FILE *files[], int fileCount);//recibe una lista de archivos CSV y los cierra
 FILE * newfileCSV(const char * fileName, char * header );// Recibe el nombre del .CSV y los titulos y lo abre, si falla retorna null
-int readStation ( const char * file, int station, int id, bikeRentalSystemADT bikeRentalSystem ); // lee el archivo csv de estaciones 
-int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalSystem ); // lee el archivo csv de trips
+int readStation ( FILE * file, int station, int id, bikeRentalSystemADT bikeRentalSystem ); // lee el archivo csv de estaciones 
+int readTrips( FILE *file , int membercol ,bikeRentalSystemADT bikeRentalSystem ); // lee el archivo csv de trips
 void error_read_File ( bikeRentalSystemADT bikeRentalSystem, FILE *files[], int error, int count );
-void close_write_files ( bikeRentalSystemADT bikeRentalSystem,  FILE *filesCSV[], FILE *filesHTML[], int error, int count );
+void close_write_files ( bikeRentalSystemADT bikeRentalSystem,  FILE *filesCSV[], htmlTable filesHTML[], int error, int count );
 int isNum( const char* str);
 
 
@@ -141,7 +141,7 @@ htmlTable query2_HTML= newTable( "query2.html", 3, "bikeStation" , "bikeEndStati
 htmlTable query3_HTML= newTable( "query3.html", 3, "weekDay", "startedTrips", "endedTrips" );
 htmlTable query4_HTML= newTable( "query4.html", 4, "bikeStation", "mostPopRouteEndStation", "mostPopRouteTrips" );
 htmlTable query5_HTML= newTable( "query5.html", 4, "month", "loopsTop1St", "loopsTop2St", "loopsTop3St");
-FILE * files_HTML[]={query1_HTML, query2_HTML, query3_HTML, query4_HTML, query5_HTML};
+htmlTable files_HTML[]={query1_HTML, query2_HTML, query3_HTML, query4_HTML, query5_HTML};
 
 
 
@@ -198,7 +198,7 @@ char tripsDay2[DAYS][MAXLENGTH];
 TDayTrips * q3= query3( bikeRentalSystem);
 char* days[]={"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday","Sunday"};
 for ( int i=0;i<DAYS;i++){
-    fprint( files_CSV[THIRD], "%s;%ld;%ld\n", days[i], q3[i].started, q3[i].ended);
+    fprintf( files_CSV[THIRD], "%s;%ld;%ld\n", days[i], q3[i].started, q3[i].ended);
     sprintf (tripsDay[i], "%ld",q3[i].started);
     sprintf (tripsDay2[i], "%ld", q3[i].ended);
     addHTMLRow( files_HTML[THIRD],days[i],tripsDay[i],tripsDay2[i] );
@@ -274,7 +274,7 @@ void closeFilesCSV (  FILE *files[], int fileCount){
 }
 
 /*Cierra los archivos HTML*/
-void closeFilesHTML (FILE *files[], int fileCount){
+void closeFilesHTML (htmlTable files[], int fileCount){
     for( int i=0;i<fileCount; i++)
     {
         if ( files[i]!=NULL )
@@ -285,7 +285,7 @@ void closeFilesHTML (FILE *files[], int fileCount){
 }
 
 /*Lee las estaciones de un archivo y su id y las agrega al sistema ( toma por parametro las columna )*/
-int readStation ( const char * file, int station, int id, bikeRentalSystemADT bikeRentalSystem ){
+int readStation ( FILE * file, int station, int id, bikeRentalSystemADT bikeRentalSystem ){
     char line[MAXLINE], *token, *stationName;
     int error = 0, stationId, i=0;
 
@@ -313,7 +313,7 @@ int readStation ( const char * file, int station, int id, bikeRentalSystemADT bi
 
 
 
-int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalSystem ){
+int readTrips( FILE *file , int membercol ,bikeRentalSystemADT bikeRentalSystem ){
     char line[MAXLINE];
     char date[MAXLENGTH_DATE], endDate[MAXLENGTH_DATE]; //yyyy-MM-dd HH:mm:ss
     int error =0;
@@ -359,7 +359,7 @@ void error_read_File ( bikeRentalSystemADT bikeRentalSystem,  FILE *files[], int
 }
 
 /*Cierra los archivos de escritura y limpia el sistema ( en caso de error aborta con el debido error)*/
-void close_write_files ( bikeRentalSystemADT bikeRentalSystem,  FILE *filesCSV[], FILE *filesHTML[], int error, int count )
+void close_write_files ( bikeRentalSystemADT bikeRentalSystem,  FILE *filesCSV[], htmlTable filesHTML[], int error, int count )
 {
     freeBikeRentalSystem(bikeRentalSystem);
     closeFilesCSV( filesCSV, count);

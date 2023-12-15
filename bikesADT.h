@@ -104,6 +104,8 @@ TDayTrips * query3(bikeRentalSystemADT bikeRentalSystem  );
 
 TQuery4 *query4(bikeRentalSystemADT bikeRentalSystem, int *dim);
 
+TmonthSt * query5 (bikeRentalSystemADT bikeRentalSystem );
+
 void freeQuery1 ( TQuery1 * q1);
 
 void freeQuery2(TQuery2 *q2, int dim2);
