@@ -1,9 +1,11 @@
-#include <stdio.h>
+
 #include "htmlTable.h"
+#include "bikesADT.h"
+
+#include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include "bikesADT.h"
 #include <ctype.h>
 
 #ifdef MON
@@ -15,7 +17,7 @@ enum stations { NAME = 0, LAT, LONG, ID };
 #define MEMBERCOL 1
 #define MEMBER_TYPE 'm'
 
-enum { OK=0,ERR_PAR, ERR_YEAR, ERR_OPEN_FILE, ERR_READ };
+enum { OK=0,ERR_PAR, ERR_YEAR, ERR_OPEN_FILE, ERR_STATION_FILE, ERR_TRIP_FILE };
 
 #define HEADER1 "bikeStation;memberTrips;casualTrips;allTrips"
 #define HEADER2 "bikeStation;bikeEndStation;oldestDateTime"
@@ -35,12 +37,13 @@ enum position { FIRST=0, SECOND, THIRD, FOURTH, FIFTH }; // posicion para buscar
 enum arguments { PROGRAM=0, TRIPS, STATIONS, BEGINYEAR, ENDYEAR};
 
 
-void closeFilesHTML (  FILE *files[], int fileCount);//recibe una lista de archivos y los cierra
-void closeFilesCSV (  FILE *files[], int fileCount);//recibe una lista de archivos y los cierra
+void closeFilesHTML (  FILE *files[], int fileCount);//recibe una lista de archivos HTML y los cierra
+void closeFilesCSV (  FILE *files[], int fileCount);//recibe una lista de archivos CSV y los cierra
 FILE * newfileCSV(const char * fileName, char * header );// Recibe el nombre del .CSV y los titulos y lo abre, si falla retorna null
 int readStation ( const char * file, int station, int id, bikeRentalSystemADT bikeRentalSystem ); // lee el archivo csv de estaciones 
 int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalSystem ); // lee el archivo csv de trips
 void error_read_File ( bikeRentalSystemADT bikeRentalSystem, FILE *files[], int error, int count );
+void close_write_files ( bikeRentalSystemADT bikeRentalSystem,  FILE *filesCSV[], FILE *filesHTML[], int error, int count );
 int isNum( const char* str);
 
 
@@ -100,16 +103,26 @@ if  ( bikeRentalSystem == NULL ||  errno == ENOMEM){
 }
 
 //Lectura de estaciones de archivo
-int error = readStation(files_data[STATIONS-1], NAME, ID, bikeRentalSystem);
+int errorStation = readStation(files_data[STATIONS-1], NAME, ID, bikeRentalSystem);
 
 //Manejo de errores V: Verifico si se pudieron leer las estaciones
-error_read_File( bikeRentalSystem, files_data, ERR_READ ,FILES_READ);
+if ( errorStation){
+    fprintf( stderr, "\nError: imposible to read stations file\n");
+    error_read_File( bikeRentalSystem, files_data, ERR_STATION_FILE ,FILES_READ);
+}
 
 //Lectura de viajes 
-error = readTrips( files_data[TRIPS-1], MEMBERCOL, bikeRentalSystem);
+int errorTrip = readTrips( files_data[TRIPS-1], MEMBERCOL, bikeRentalSystem);
 
 //Manejo de errores VI: Verifico si se pudieron leer los viajes
-error_read_File( bikeRentalSystem, files_data, ERR_READ ,FILES_READ);
+if (errorTrip){
+    fprintf( stderr, "\nError: imposible to read trips file\n");
+    error_read_File( bikeRentalSystem, files_data, ERR_TRIP_FILE ,FILES_READ);
+}
+
+//Cerramos archivos de lectura
+closeFilesCSV( files_data, FILES_READ ); 
+
 
 
 //Inicializacion de archivos de escritura ( .csv y .html) 
@@ -135,15 +148,10 @@ FILE * files_HTML[]={query1_HTML, query2_HTML, query3_HTML, query4_HTML, query5_
 //Manejo de errores VII: Verifico que se hayan abierto correctamente los archivos de escritura
 for (int i= 0; i<COUNT_Q;i++){
     if ((files_CSV[i]==NULL)||(files_HTML[i]==NULL)){
-        closeFilesCSV( files_CSV, COUNT_Q);
-        closeHTMLFiles( files_HTML, COUNT_Q);
-        closeFilesCSV( files_data, FILES_READ );
         fprintf( stderr, "ERROR in openning file");
-        freebikeRentalSystem(bikeRentalSystem);
-        exit(ERR_OPEN_FILE);
+        close_write_files( bikeRentalSystem, files_CSV,files_HTML, ERR_OPEN_FILE, COUNT_Q);
        }
 }
-
 
 
 // Upload Query 1 
@@ -227,7 +235,11 @@ for ( int i=0; i<MONTHS; i++) {
 
 
 // Fin: Cierre de los archivos de escritura
-closeFiles (files_data, FILES_READ);
+// closeFilesCSV( files_CSV, COUNT_Q);
+// closeFilesHTML( files_HTML, COUNT_Q);
+// freeBikeRentalSystem(bikeRentalSystem);
+
+close_write_files( bikeRentalSystem, files_CSV,files_HTML, OK, COUNT_Q);  
 
 return OK;
 }
@@ -247,10 +259,9 @@ FILE * newfileCSV(const char * fileName, char * header )
 	    fclose(file);
 	    return NULL;
     }
-    fprintf(fileName,"%s\n", header );
+    fprintf(file,"%s\n", header );
     return file;
 }
-
 
 void closeFilesCSV (  FILE *files[], int fileCount){
     for( int i=0;i<fileCount; i++)
@@ -262,6 +273,7 @@ void closeFilesCSV (  FILE *files[], int fileCount){
     }
 }
 
+/*Cierra los archivos HTML*/
 void closeFilesHTML (FILE *files[], int fileCount){
     for( int i=0;i<fileCount; i++)
     {
@@ -272,22 +284,25 @@ void closeFilesHTML (FILE *files[], int fileCount){
     }
 }
 
-
+/*Lee las estaciones de un archivo y su id y las agrega al sistema ( toma por parametro las columna )*/
 int readStation ( const char * file, int station, int id, bikeRentalSystemADT bikeRentalSystem ){
     char line[MAXLINE], *token, *stationName;
     int error = 0, stationId, i=0;
 
     fgets ( line, sizeof( line), file ); //La primera linea son titulos
-    while ( fgets(line, sizeof(line), file) != NULL ){
+    while ( fgets(line, sizeof(line), file) != NULL )
+    {
         token = strtok(line, DELIMIT);
 
-        for (i=0; token != NULL; i++) {
-            if ( i == station ){
+        for (i=0; token != NULL; i++) 
+        {
+            if ( i == station )
+            {
                 stationName = token;
-
-            } else if ( i == id ){
+            } 
+            else if ( i == id )
+            {
                 stationId = atoi(token);
-
             } 
             token=strtok(NULL, DELIMIT);
         }
@@ -297,6 +312,7 @@ int readStation ( const char * file, int station, int id, bikeRentalSystemADT bi
 }
 
 
+
 int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalSystem ){
     char line[MAXLINE];
     char date[MAXLENGTH_DATE], endDate[MAXLENGTH_DATE]; //yyyy-MM-dd HH:mm:ss
@@ -304,9 +320,12 @@ int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalS
     int Id, endId, membership ; 
 
     fgets ( line, sizeof( line), file ); //La primera linea son titulos
-    while( fgets ( line, sizeof( line), file )!=NULL){
+
+    while( fgets ( line, sizeof( line), file )!=NULL)
+    {
         char * token  = strtok( line, DELIMIT);
-        while( token != NULL ) {
+        while( token != NULL )
+        {
             strcpy( date, token);
             token=strtok(NULL, DELIMIT);
 
@@ -319,26 +338,37 @@ int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalS
             endId = atoi( token);
             token=strtok(NULL, DELIMIT);
 
-            if ( membercol) 
+            if ( membercol) {
                     token=strtok(NULL, DELIMIT); //Si member col es 1 significa que no es esta columna  (voy al siguiente) 
+            }
 
             membership  = ( token[0]== MEMBER_TYPE) ; //verificar : si membership se manejaba con 1 y 0 ;
                                                         
-        error= addTrip( bikeRentalSystem, Id, endId, date, membership, endDate); 
+            error= addTrip( bikeRentalSystem, Id, endId, date, membership, endDate); 
         }   
     }
 
  return error;
 }
 
-
-void error_read_File ( bikeRentalSystemADT bikeRentalSystem,  FILE *files[], int error, int count   ){
-    freebikeRentalSystem(bikeRentalSystem);
+/*Cierra los archivos de lectura y limpia el sistema en caso de error*/
+void error_read_File ( bikeRentalSystemADT bikeRentalSystem,  FILE *files[], int error, int count ){
+    freeBikeRentalSystem(bikeRentalSystem);
     closeFilesCSV( files, count );
     exit(error) ;
 }
 
+/*Cierra los archivos de escritura y limpia el sistema ( en caso de error aborta con el debido error)*/
+void close_write_files ( bikeRentalSystemADT bikeRentalSystem,  FILE *filesCSV[], FILE *filesHTML[], int error, int count )
+{
+    freeBikeRentalSystem(bikeRentalSystem);
+    closeFilesCSV( filesCSV, count);
+    closeFilesHTML( filesHTML, count);
+    if (error)
+        exit(error) ;
+}
 
+/*Verifica si un str esta formado por numeros */
 int isNum( const char* str){
     for ( int i =0; str[i]; i++){
         if ( !isdigit(str[i])){
