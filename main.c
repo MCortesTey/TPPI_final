@@ -7,22 +7,15 @@
 #include <ctype.h>
 
 #ifdef MON
-#define CITY 1
-#define NAME 1
-#define ID 0
-#define MEMBERCOL 0
-#define MEMBER_TYPE '0' 
-#else
-#define CITY 0
-#define NAME 0
-#define ID 3
+enum stations { ID = 0, NAME, LAT , LONG} ; 
+#define MEMBERCOL 0 
+#define MEMBER_TYPE '0'
+#else 
+enum stations { NAME = 0, LAT, LONG, ID };
 #define MEMBERCOL 1
 #define MEMBER_TYPE 'm'
 
-
-
 enum { OK=0,ERR_PAR, ERR_YEAR, ERR_OPEN_FILE, ERR_READ };
-
 
 #define HEADER1 "bikeStation;memberTrips;casualTrips;allTrips"
 #define HEADER2 "bikeStation;bikeEndStation;oldestDateTime"
@@ -31,25 +24,24 @@ enum { OK=0,ERR_PAR, ERR_YEAR, ERR_OPEN_FILE, ERR_READ };
 #define HEADER5 "month;loopsTop1St;loopsTop2St;loopsTop3St"
 #define DELIMIT ";"
 #define COUNT_Q 5 //cantidad de queries 
-#define FILES_READ 2 //Cant archivos que hay que leer 
+#define FILES_READ 2 //Cantidad archivos que hay que leer 
 #define DAYS 7
-#define MAXLENGTH 10
-#define MAXLINE 100
-#define MAXLENGTH_DATE 20
+#define MAXLENGTH 10 // longitud maxima de string de numeros para guardar en archivos html
+#define MAXLINE 100 // longitud maxima de cada linea de los archivos csv
+#define MAXLENGTH_DATE 20 //longitud maxima de string de fechas para guardar en archivos html
 
 
-enum position { FIRST=0, SECOND, THIRD, FOURTH, FIFTH };
+enum position { FIRST=0, SECOND, THIRD, FOURTH, FIFTH }; // posicion para buscar archivos en files_csv y files_htm
 enum arguments { PROGRAM=0, TRIPS, STATIONS, BEGINYEAR, ENDYEAR};
 
 
-void closeFilesHTML (  FILE *files[], int fileCount);//recive una lista de archivos y los cierra
-void closeFilesCSV (  FILE *files[], int fileCount);//recive una lista de archivos y los cierra
-FILE * newfileCSV(const char * fileName, char * header );// Recive el nombre del .CSV y los titulos y lo abre, si falla retorna null
-int readStation ( const char * file, int station, int id, bikeRentalSystemADT bikeRentalSystem );
-int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalSystem );
-void error_read_File ( bikeRentalSystemADT bikeRentalSystem, FILE *files[], int error, int count   );
+void closeFilesHTML (  FILE *files[], int fileCount);//recibe una lista de archivos y los cierra
+void closeFilesCSV (  FILE *files[], int fileCount);//recibe una lista de archivos y los cierra
+FILE * newfileCSV(const char * fileName, char * header );// Recibe el nombre del .CSV y los titulos y lo abre, si falla retorna null
+int readStation ( const char * file, int station, int id, bikeRentalSystemADT bikeRentalSystem ); // lee el archivo csv de estaciones 
+int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalSystem ); // lee el archivo csv de trips
+void error_read_File ( bikeRentalSystemADT bikeRentalSystem, FILE *files[], int error, int count );
 int isNum( const char* str);
-
 
 
 int main ( int cantArg, char* args[]){
@@ -89,7 +81,7 @@ FILE * files_data[] ={ trips, stations };
 // Manejo de errores III:  Verifico se se abrieron  bien los archivos .csv de lectura
 if ( files_data[TRIPS-1] == NULL || files_data[STATIONS-1] ){
     fprintf (stderr, "\nError: opening file\n");
-    closeFilesCSV( files_data,FILES_READ );
+    closeFilesCSV( files_data, FILES_READ );
     exit(ERR_OPEN_FILE);
 }
 
@@ -101,7 +93,7 @@ bikeRentalSystemADT bikeRentalSystem=  newBikeRentalSystem(beginYear, endYear);
 //Manejo de errores IV: Verifico se inicializo correctametne el TAD debido al espacio de memoria 
 if  ( bikeRentalSystem == NULL ||  errno == ENOMEM){
     errno=ENOMEM;//Por si entro por el NULL
-    fprintf( stderr, "ERROR memory unavailable");
+    fprintf( stderr, "\nError: memory unavailable\n");
     closeFilesCSV( files_data, FILES_READ );
     freebikeRentalSystem(bikeRentalSystem);
     exit(ENOMEM);
@@ -111,17 +103,13 @@ if  ( bikeRentalSystem == NULL ||  errno == ENOMEM){
 int error = readStation(files_data[STATIONS-1], NAME, ID, bikeRentalSystem);
 
 //Manejo de errores V: Verifico si se pudieron leer las estaciones
-
 error_read_File( bikeRentalSystem, files_data, ERR_READ ,FILES_READ);
 
 //Lectura de viajes 
 error = readTrips( files_data[TRIPS-1], MEMBERCOL, bikeRentalSystem);
 
 //Manejo de errores VI: Verifico si se pudieron leer los viajes
-
 error_read_File( bikeRentalSystem, files_data, ERR_READ ,FILES_READ);
-
-
 
 
 //Inicializacion de archivos de escritura ( .csv y .html) 
@@ -131,7 +119,7 @@ FILE * query2_CSV= newfileCSV( "query2.csv",HEADER2);
 FILE * query3_CSV= newfileCSV( "query3.csv",HEADER3);
 FILE * query4_CSV= newfileCSV( "query4.csv",HEADER4);
 FILE * query5_CSV= newfileCSV( "query5.csv",HEADER5);
-FILE * files_CSV[]={query1_CSV,query2_CSV,query3_CSV,query4_CSV,query5_CSV};
+FILE * files_CSV[]={query1_CSV, query2_CSV, query3_CSV, query4_CSV, query5_CSV};
 
 
 //HTML
@@ -140,7 +128,7 @@ htmlTable query2_HTML= newTable( "query2.html", 3, "bikeStation" , "bikeEndStati
 htmlTable query3_HTML= newTable( "query3.html", 3, "weekDay", "startedTrips", "endedTrips" );
 htmlTable query4_HTML= newTable( "query4.html", 4, "bikeStation", "mostPopRouteEndStation", "mostPopRouteTrips" );
 htmlTable query5_HTML= newTable( "query5.html", 4, "month", "loopsTop1St", "loopsTop2St", "loopsTop3St");
-FILE * files_HTML[]={query1_HTML,query2_HTML,query3_HTML,query4_HTML,query5_HTML};
+FILE * files_HTML[]={query1_HTML, query2_HTML, query3_HTML, query4_HTML, query5_HTML};
 
 
 
@@ -235,9 +223,6 @@ return OK;
 
 
 
-
-
-
 //Funcion que crea archivo nuevo de csv y verifica si se creo bien
 // se ingresan los headers  por parametro 
 FILE * newfileCSV(const char * fileName, char * header )
@@ -275,9 +260,6 @@ void closeFilesHTML (FILE *files[], int fileCount){
         }
     }
 }
-
-
-
 
 
 int readStation ( const char * file, int station, int id, bikeRentalSystemADT bikeRentalSystem ){
@@ -344,7 +326,6 @@ void error_read_File ( bikeRentalSystemADT bikeRentalSystem,  FILE *files[], int
     closeFilesCSV( files, count );
     exit(error) ;
 }
-
 
 
 int isNum( const char* str){

@@ -12,9 +12,9 @@ typedef struct TStation{
     int idx; //indice correspondiente en la matriz de trips
     time_t oldestTrip; //tiempo del viaje mas antiguo
     struct tm * oldestStruct;  
-    char * oldestEnd; //nombre estacion de fin viaje mas antiguio
+    char * oldestEnd; //nombre estacion de fin viaje mas antiguo
     size_t tripsPopularEnd; //cantidad de la ruta mas visitado
-    char * popularEnd;
+    char * popularEnd; // nombre estacion de fin viaje mas popular
     size_t memTrips; //contador de viajes hechos por miembros
     struct TStation * tail;
 }  TStation;

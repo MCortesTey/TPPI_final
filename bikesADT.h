@@ -82,9 +82,8 @@ size_t getMemTrips ( bikeRentalSystemADT bikeRentalSystem );
 // retorna indice correspondiente a la estacion donde iter apunta, en la matriz de trips
 size_t getIdx ( bikeRentalSystemADT bikeRentalSystem );
 
+// retorna nombre de estacion de fin mas popular
 char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem );
-
-TList1 query1( bikeRentalSystemADT bikeRentalSystem );
 
 // apunta al primer elemento de query1
 void toBeginQuery1 ( TList q1 ); 
@@ -95,7 +94,11 @@ int hasNextQuery1 ( TList q1 );
 //apunta al siguiente elemento
 void * nextQuery1 ( TList q1 );
 
+// retorna nombre de estacion de fin mas antigua
 char * getOldestEnd (bikeRentalSystemADT bikeRentalSystem );
+
+// queries
+TList1 query1( bikeRentalSystemADT bikeRentalSystem );
 
 Tquery2 * query2( bikeRentalSystemADT bikeRentalSystem, int * dim );
 
@@ -103,6 +106,7 @@ TDayTrips * query3(bikeRentalSystemADT bikeRentalSystem  );
 
 TQuery4 *query4(bikeRentalSystemADT bikeRentalSystem, int *dim);
 
+//liberan queries
 void freeQuery1 ( TList1 list);
 
 void freeQuery2(Tquery2 *q2, int dim2);
