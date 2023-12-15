@@ -332,14 +332,14 @@ char * getName (bikeRentalSystemADT bikeRentalSystem){
 
 size_t getMemTrips ( bikeRentalSystemADT bikeRentalSystem ){
     if ( ! hasNext(bikeRentalSystem) ){
-        return NULL;
+        return 0;
     }
     return bikeRentalSystem->iter->memTrips;
 }
 
 size_t getIdx ( bikeRentalSystemADT bikeRentalSystem ){
     if ( ! hasNext(bikeRentalSystem) ){
-        return NULL;
+        return 0;
     }
     return bikeRentalSystem->iter->idx;
 }
@@ -398,7 +398,7 @@ void freeList1 ( TList1 list ){
         return;
     }
     free(list->name);
-    freeQuery1(list->tail);
+    freeList1(list->tail);
     free(list);
 }
 
@@ -417,7 +417,13 @@ int hasNextQuery1( TQuery1 * q1){
 }
 
 void *nextQuery1(TQuery1 * q1){
-    q1->iter = q1->iter->tail;
+    if ( !hasNextQuery1( q1)){
+        return NULL;
+    }
+    TList1 ans=q1->iter;
+    q1->iter=q1->iter->tail;
+    return ans;
+    
 }
 
 // Query 2: Viaje mas antiguo por estación 
