@@ -12,10 +12,13 @@
 enum stations { ID = 0, NAME, LAT , LONG} ; 
 #define MEMBERCOL 0 
 #define MEMBER_TYPE '0'
+#define MAXLENGTH_DATE 20 //longitud maxima de string de fechas para guardar en archivos html
 #else 
 enum stations { NAME = 0, LAT, LONG, ID };
 #define MEMBERCOL 1
 #define MEMBER_TYPE 'm'
+#define MAXLENGTH_DATE 27
+#endif
 
 enum { OK=0,ERR_PAR, ERR_YEAR, ERR_OPEN_FILE, ERR_STATION_FILE, ERR_TRIP_FILE };
 
@@ -30,7 +33,7 @@ enum { OK=0,ERR_PAR, ERR_YEAR, ERR_OPEN_FILE, ERR_STATION_FILE, ERR_TRIP_FILE };
 #define DAYS 7
 #define MAXLENGTH 10 // longitud maxima de string de numeros para guardar en archivos html
 #define MAXLINE 100 // longitud maxima de cada linea de los archivos csv
-#define MAXLENGTH_DATE 20 //longitud maxima de string de fechas para guardar en archivos html
+
 
 
 enum position { FIRST=0, SECOND, THIRD, FOURTH, FIFTH }; // posicion para buscar archivos en files_csv y files_htm
@@ -82,7 +85,7 @@ FILE * stations = fopen( args[STATIONS], "r");// archivo de estaciones
 FILE * files_data[] ={ trips, stations };
 
 // Manejo de errores III:  Verifico se se abrieron  bien los archivos .csv de lectura
-if ( files_data[TRIPS-1] == NULL || files_data[STATIONS-1] ){
+if ( files_data[TRIPS-1] == NULL || files_data[STATIONS-1] == NULL ){
     fprintf (stderr, "\nError: opening file\n");
     closeFilesCSV( files_data, FILES_READ );
     exit(ERR_OPEN_FILE);
@@ -139,7 +142,7 @@ FILE * files_CSV[]={query1_CSV, query2_CSV, query3_CSV, query4_CSV, query5_CSV};
 htmlTable query1_HTML= newTable( "query1.html", 4, "bikeStation", "memberTrips", "casualTrips", "allTrips" );
 htmlTable query2_HTML= newTable( "query2.html", 3, "bikeStation" , "bikeEndStation", "oldestDateTime" );
 htmlTable query3_HTML= newTable( "query3.html", 3, "weekDay", "startedTrips", "endedTrips" );
-htmlTable query4_HTML= newTable( "query4.html", 4, "bikeStation", "mostPopRouteEndStation", "mostPopRouteTrips" );
+htmlTable query4_HTML= newTable( "query4.html", 3, "bikeStation", "mostPopRouteEndStation", "mostPopRouteTrips" );
 htmlTable query5_HTML= newTable( "query5.html", 4, "month", "loopsTop1St", "loopsTop2St", "loopsTop3St");
 htmlTable files_HTML[]={query1_HTML, query2_HTML, query3_HTML, query4_HTML, query5_HTML};
 
@@ -172,6 +175,7 @@ while ( hasNextQuery1(q1) ){
     addHTMLRow(files_HTML[FIRST], q1->iter->name, stringTrips, stringTrips2, stringTrips3 );
     nextQuery1(q1);
 }
+freeQuery1(q1);
 
 //Upload Query 2 
 char dayString[MAXLENGTH_DATE];
@@ -189,6 +193,7 @@ for ( int i=0; i < dim2 ; i++){
         addHTMLRow(files_HTML[SECOND], q2[i].nameSt, "empty", "empty");
     }
 }
+freeQuery2(q2, dim2);
 
 
 //Upload Query 3
@@ -203,6 +208,7 @@ for ( int i=0;i<DAYS;i++){
     sprintf (tripsDay2[i], "%ld", q3[i].ended);
     addHTMLRow( files_HTML[THIRD],days[i],tripsDay[i],tripsDay2[i] );
 }
+freeQuery3(q3);
 
 // Upload Query 4 
 int dim4;
@@ -219,6 +225,7 @@ for (int i = 0 ; i < dim4 ; i++){
     }
     
 }
+freeQuery4(q4, dim4);
 
 // Upload Query 5
 TmonthSt * q5 = query5( bikeRentalSystem );
@@ -232,7 +239,7 @@ for ( int i=0; i<MONTHS; i++) {
         addHTMLRow ( files_HTML[FIFTH], months[i], "Empty", "Empty", "Empty");
     }
 }
-
+freeQuery5(q5);
 
 // Fin: Cierre de los archivos de escritura
 // closeFilesCSV( files_CSV, COUNT_Q);
@@ -286,18 +293,19 @@ void closeFilesHTML (htmlTable files[], int fileCount){
 
 /*Lee las estaciones de un archivo y su id y las agrega al sistema ( toma por parametro las columna )*/
 int readStation ( FILE * file, int station, int id, bikeRentalSystemADT bikeRentalSystem ){
-    char line[MAXLINE], *token, *stationName;
+    char line[MAXLINE];
     int error = 0, stationId, i=0;
 
     fgets ( line, sizeof( line), file ); //La primera linea son titulos
     while ( fgets(line, sizeof(line), file) != NULL )
     {
-        token = strtok(line, DELIMIT);
-
+        char * token = strtok(line, DELIMIT);
+        char * stationName ;
         for (i=0; token != NULL; i++) 
         {
+           
             if ( i == station )
-            {
+            { 
                 stationName = token;
             } 
             else if ( i == id )
@@ -307,15 +315,18 @@ int readStation ( FILE * file, int station, int id, bikeRentalSystemADT bikeRent
             token=strtok(NULL, DELIMIT);
         }
         error = addStation(bikeRentalSystem, stationName, stationId );
+        if (error == 0 ){
+            return 1;
+        }
     }
-    return error;
+    return 0;
 }
 
 
 
 int readTrips( FILE *file , int membercol ,bikeRentalSystemADT bikeRentalSystem ){
     char line[MAXLINE];
-    char date[MAXLENGTH_DATE], endDate[MAXLENGTH_DATE]; //yyyy-MM-dd HH:mm:ss
+    char date[27], endDate[27]; //yyyy-MM-dd HH:mm:ss
     int error =0;
     int Id, endId, membership ; 
 
@@ -326,10 +337,11 @@ int readTrips( FILE *file , int membercol ,bikeRentalSystemADT bikeRentalSystem 
         char * token  = strtok( line, DELIMIT);
         while( token != NULL )
         {
+            
             strcpy( date, token);
             token=strtok(NULL, DELIMIT);
-
-            Id = atoi( token);
+            
+            Id = atoi(token);
             token=strtok(NULL, DELIMIT);
 
             strcpy( endDate, token);
@@ -344,11 +356,16 @@ int readTrips( FILE *file , int membercol ,bikeRentalSystemADT bikeRentalSystem 
 
             membership  = ( token[0]== MEMBER_TYPE) ; //verificar : si membership se manejaba con 1 y 0 ;
                                                         
-            error= addTrip( bikeRentalSystem, Id, endId, date, membership, endDate); 
+            error= addTrip( bikeRentalSystem, Id, endId, date, membership, endDate);
+            if (error == 0)
+            {
+                return 1;
+            }
+            token = strtok(NULL, DELIMIT);
         }   
     }
 
- return error;
+ return 0;
 }
 
 /*Cierra los archivos de lectura y limpia el sistema en caso de error*/
@@ -376,5 +393,3 @@ int isNum( const char* str){
     }
     return 1;
 }
-
-#endif

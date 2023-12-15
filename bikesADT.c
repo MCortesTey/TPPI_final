@@ -156,11 +156,12 @@ static TList addStationRec(TList list, char *name, int id, int *added, int idx, 
         errno = 0;
         TList new = malloc(sizeof(TStation));
         if (new == NULL || errno == ENOMEM){
+            printf("cagamo\n");
             return NULL; // por ahi seria mejor tener una flag auxiliar para marcar errores
         }
-        // new->name = malloc(sizeof(char) * (strlen(name) + 1));
-        // strcpy(new->name, name);
-        new->name = name;
+        new->name = malloc(sizeof(char) * (strlen(name) + 1));
+        strcpy(new->name, name);
+        // new->name = name;
         new->id = id;
         new->idx = idx;
         new->memTrips = 0;
@@ -175,6 +176,7 @@ static TList addStationRec(TList list, char *name, int id, int *added, int idx, 
         return new;
     }
     if (c == 0){
+        printf("me cago\n");
         return list;
     }
     list->tail = addStationRec(list->tail, name, id, added, idx, save);
@@ -586,6 +588,7 @@ static void freeStations(TList list){
     if (list == NULL){
         return;
     }
+    free(list->name);
     free(list->oldestStruct);
     freeStations(list->tail);
     free(list);
