@@ -17,12 +17,14 @@ typedef struct query1 {
     struct query1 * tail;
 } Tquery1node;
 
-typedef Tquery1node * TList1;
+typedef Tquery1node * TNode1;
 
 typedef struct query1{
-    TList1 first;
-    TList1 iter;
+    Tquery1node * first;
+    Tquery1node * iter;
 } Tquery1;
+
+typedef Tquery1 * TList1;
 
 typedef struct query2 {
     char * nameSt; // nombre de la estacion de inicio
@@ -103,7 +105,7 @@ TQuery4 *query4(bikeRentalSystemADT bikeRentalSystem, int *dim);
 
 void freeQuery1 ( TList1 list);
 
-void freeQuery2(Tquery2 *q2, int dim);
+void freeQuery2(Tquery2 *q2, int dim2);
 
 void freeQuery3(TDayTrips *vec);
 

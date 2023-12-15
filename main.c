@@ -171,7 +171,7 @@ char stringTrips3[MAXLENGTH];
 
 TList1 q1 = query1(bikeRentalSystem);
 
-toBeginQuery1 (TList1 q1);
+toBeginQuery1 (q1);
 while ( hasNextQuery1(q1) ){
     fprintf ( files_CSV[FIRST], "%s;%ld;%ld;%ld\n" , q1->iter->name, q1->iter->cantMem, q1->iter->cantCas, q1->iter->cantTot);
 
@@ -186,9 +186,10 @@ while ( hasNextQuery1(q1) ){
 //Upload Query 2 
 char dayString[MAXLENGTH_DATE];
 
-Tquery2 * q2 = query2( bikeRentalSystem);
+int dim2;
+Tquery2 * q2 = query2( bikeRentalSystem, &dim2);
 
-for ( int i=0; i < bikeRentalSystem->dim ; i++){
+for ( int i=0; i < dim2 ; i++){
     strftime(dayString, MAXLENGTH_DATE , "%x %H:%M",  q2[i].oldestTrip );
     fprintf( files_CSV[SECOND],"%s;%s;%s\n" ,q2[i].nameSt, q2[i].nameEnd, dayString);
     addHTMLRow  ( files_HTML[SECOND], q2[i].nameSt, q2[i].nameEnd, dayString);
@@ -332,7 +333,7 @@ int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalS
             if ( membercol) 
                     token=strtok(NULL, DELIMIT); //Si member col es 1 significa que no es esta columna  (voy al siguiente) 
 
-            membership  = (strcmp(  token , MEMBER) == 0); //verificar si membership se manejaba con 1 y 0 ;
+            membership  = (strcmp(  token , MEMBERCOL) == 0); //verificar si membership se manejaba con 1 y 0 ;
                                                         
         error= addTrip( bikeRentalSystem, Id, endId, date, membership, endDate); //Hay que corregir la funcion addtrip para que no mezcle front y back y tome el strn como parametro y lo divida en tiempo en el back 
         }   
@@ -357,3 +358,5 @@ int isNum( const char* str){
     }
     return 1;
 }
+
+#endif

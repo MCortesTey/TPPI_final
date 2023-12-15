@@ -351,9 +351,9 @@ size_t compare ( size_t elem1, size_t elem2 ){
     return elem1 - elem2;
 }
 
-static TList1 addRecQ1 (TList1 list, char * name, size_t memTrips, size_t total ){
+static TList1 addRecQ1 (Tquery1node * list, char * name, size_t memTrips, size_t total ){
     if ( list == NULL || compare(list->cantTot, total) < 0 ){
-        TList1 new = malloc(sizeof(Tquery1));
+        TNode1 new = malloc(sizeof(TNode1));
         CHECKMEMORY(new)
         if ( errno == ENOMEM ){
             return NULL;
@@ -372,8 +372,9 @@ static TList1 addRecQ1 (TList1 list, char * name, size_t memTrips, size_t total 
 }
 
 TList1 query1 ( bikeRentalSystemADT bikeRentalSystem ){
-    TList1 query1 = calloc(1, sizeof(Tquery1));
+    TList1 ans = calloc(1, sizeof(TList1));
     CHECKMEMORY(query1)
+    ans->first = malloc( sizeof(TNode1));
 
     toBegin(bikeRentalSystem);
     while ( hasNext(bikeRentalSystem) ){
@@ -382,13 +383,13 @@ TList1 query1 ( bikeRentalSystemADT bikeRentalSystem ){
         for ( size_t j=0; j < bikeRentalSystem->dim; j++ ){
             total += bikeRentalSystem->trips[idx][j];
         }
-        query1 = addRecQ1(query1, getName(bikeRentalSystem) , getMemTrips(bikeRentalSystem), total );
+        ans->first = addRecQ1(ans->first, getName(bikeRentalSystem) , getMemTrips(bikeRentalSystem), total );
         next(bikeRentalSystem);
     }
-    return query1;
+    return ans;
 }
 
-void freeQuery1 ( TList1 list ){
+void freeList1 ( TNode1 list ){
     if ( list == NULL ){
         return;
     }
@@ -396,16 +397,21 @@ void freeQuery1 ( TList1 list ){
     free(list);
 }
 
-void toBeginQuery1 ( TList q1 ){
+void freeQuery1 ( TList1 list){
+    freeList1(list->first);
+    free(list);
+}
+
+void toBeginQuery1 ( TList1 q1 ){
     q1->iter = q1->first;
     return;
 }
 
-int hasNextQuery1 ( TList q1 ){
+int hasNextQuery1 ( TList1 q1 ){
     return q1->iter != NULL;
 }
 
-void * nextQuery1 ( TList q1 ){
+void * nextQuery1 ( TList1 q1 ){
     q1->iter = q1->iter->tail;
 }
 
@@ -422,7 +428,7 @@ char * getOldestEnd (bikeRentalSystemADT bikeRentalSystem ){
     return bikeRentalSystem->iter->oldestEnd;
 }
 
-Tquery2 *query2(bikeRentalSystemADT bikeRentalSystem, int *dim){
+Tquery2 *query2(bikeRentalSystemADT bikeRentalSystem, int *dim2){
     Tquery2 *ans = calloc(1, bikeRentalSystem->dim * sizeof(Tquery2));
     CHECKMEMORY(ans);
 
@@ -444,12 +450,12 @@ Tquery2 *query2(bikeRentalSystemADT bikeRentalSystem, int *dim){
 
         next(bikeRentalSystem);
     }
-    (*dim) = i;
+    (*dim2) = i;
     return ans;
 }
 
-void freeQuery2(Tquery2 *q2, int dim){
-    for (int i = 0; i < dim; i++){
+void freeQuery2(Tquery2 *q2, int dim2){
+    for (int i = 0; i < dim2; i++){
         free(q2[i].nameSt);
         free(q2[i].nameEnd);
     }
