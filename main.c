@@ -11,24 +11,27 @@
 #define NAME 1
 #define ID 0
 #define MEMBERCOL 0
+#define MEMBER_TYPE '0' 
 #else
 #define CITY 0
 #define NAME 0
 #define ID 3
 #define MEMBERCOL 1
-#define MAXDATE 20 
-
-enum { ERR_PAR=1, ERR_YEAR, ERR_OPEN_FILE, ERR_READ };
+#define MEMBER_TYPE 'm'
 
 
-#define HEADER1"bikeStation;memberTrips;casualTrips;allTrips"
-#define HEADER2"bikeStation;bikeEndStation;oldestDateTime"
-#define HEADER3"weekDay;startedTrips;endedTrips"
-#define HEADER4"bikeStation;mostPopRouteEndStation;mostPopRouteTrips"
-#define HEADER5"month;loopsTop1St;loopsTop2St;loopsTop3St"
+
+enum { OK=0,ERR_PAR, ERR_YEAR, ERR_OPEN_FILE, ERR_READ };
+
+
+#define HEADER1 "bikeStation;memberTrips;casualTrips;allTrips"
+#define HEADER2 "bikeStation;bikeEndStation;oldestDateTime"
+#define HEADER3 "weekDay;startedTrips;endedTrips"
+#define HEADER4 "bikeStation;mostPopRouteEndStation;mostPopRouteTrips"
+#define HEADER5 "month;loopsTop1St;loopsTop2St;loopsTop3St"
 #define DELIMIT ";"
 #define COUNT_Q 5 //cantidad de queries 
-#define FILES_PARAMETERS 2 //Cant archivos que hay que leer 
+#define FILES_READ 2 //Cant archivos que hay que leer 
 #define DAYS 7
 #define MAXLENGTH 10
 #define MAXLINE 100
@@ -41,7 +44,6 @@ enum arguments { PROGRAM=0, TRIPS, STATIONS, BEGINYEAR, ENDYEAR};
 
 void closeFilesHTML (  FILE *files[], int fileCount);//recive una lista de archivos y los cierra
 void closeFilesCSV (  FILE *files[], int fileCount);//recive una lista de archivos y los cierra
-void printHeaders( FILE *files1[], char* headers[], int fileCount); // Recive dos listas de archivos con el mismo largo y copia los mimos titulos en orden para cada archivo 
 FILE * newfileCSV(const char * fileName, char * header );// Recive el nombre del .CSV y los titulos y lo abre, si falla retorna null
 int readStation ( const char * file, int station, int id, bikeRentalSystemADT bikeRentalSystem );
 int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalSystem );
@@ -56,27 +58,21 @@ int main ( int cantArg, char* args[]){
         fprintf( stderr, "\nError: invalid amount of parameters\n");
         exit(ERR_PAR);
     }
-    int beginYear = 0, endYear = 0;
+    int beginYear = FREEYEAR, endYear = FREEYEAR;
 
-    if ( cantArg < 4 ){
-        beginYear = FREEYEAR;
-        endYear = FREEYEAR;
-    } else if ( cantArg == 4 ){
+    if ( cantArg >= 4 ){
         if( !isNum( args[BEGINYEAR])){//Verifica que los parametros puedan ser pasados a int 
             fprintf( stderr, "\nError: invalid type of parameters\n");
             exit(ERR_PAR);
             }
         beginYear = atoi(args[BEGINYEAR]);
-        endYear = FREEYEAR;
-    } else if ( cantArg == 5 ){
-        if( !isNum( args[BEGINYEAR]) ||!isNum( args[ENDYEAR]) ){//Verifica que los parametros puedan ser pasados a int 
+
+    } if ( cantArg == 5 ){
+        if(!isNum( args[ENDYEAR]) ){//Verifica que los parametros puedan ser pasados a int 
             fprintf( stderr, "\nError: invalid type of parameters\n");
             exit( ERR_PAR);
             }
-        beginYear = atoi(args[BEGINYEAR]);
         endYear = atoi(args[ENDYEAR]);
-
-
 
 //Manejo de errores II: Verifico que los a;os introducidos sean aptos
         if ( beginYear > endYear ){
@@ -93,7 +89,7 @@ FILE * files_data[] ={ trips, stations };
 // Manejo de errores III:  Verifico se se abrieron  bien los archivos .csv de lectura
 if ( files_data[TRIPS-1] == NULL || files_data[STATIONS-1] ){
     fprintf (stderr, "\nError: opening file\n");
-    closeFilesCSV( files_data,FILES_PARAMETERS );
+    closeFilesCSV( files_data,FILES_READ );
     exit(ERR_OPEN_FILE);
 }
 
@@ -106,7 +102,7 @@ bikeRentalSystemADT bikeRentalSystem=  newBikeRentalSystem(beginYear, endYear);
 if  ( bikeRentalSystem == NULL ||  errno == ENOMEM){
     errno=ENOMEM;//Por si entro por el NULL
     fprintf( stderr, "ERROR memory unavailable");
-    closeFilesCSV( files_data, FILES_PARAMETERS );
+    closeFilesCSV( files_data, FILES_READ );
     freebikeRentalSystem(bikeRentalSystem);
     exit(ENOMEM);
 }
@@ -116,14 +112,14 @@ int error = readStation(files_data[STATIONS-1], NAME, ID, bikeRentalSystem);
 
 //Manejo de errores V: Verifico si se pudieron leer las estaciones
 
-error_read_File( bikeRentalSystem, files_data, ERR_READ ,FILES_PARAMETERS);
+error_read_File( bikeRentalSystem, files_data, ERR_READ ,FILES_READ);
 
 //Lectura de viajes 
 error = readTrips( files_data[TRIPS-1], MEMBERCOL, bikeRentalSystem);
 
 //Manejo de errores VI: Verifico si se pudieron leer los viajes
 
-error_read_File( bikeRentalSystem, files_data, ERR_READ ,FILES_PARAMETERS);
+error_read_File( bikeRentalSystem, files_data, ERR_READ ,FILES_READ);
 
 
 
@@ -153,14 +149,12 @@ for (int i= 0; i<COUNT_Q;i++){
     if ((files_CSV[i]==NULL)||(files_HTML[i]==NULL)){
         closeFilesCSV( files_CSV, COUNT_Q);
         closeHTMLFiles( files_HTML, COUNT_Q);
-        closeFilesCSV( files_data, FILES_PARAMETERS );
+        closeFilesCSV( files_data, FILES_READ );
         fprintf( stderr, "ERROR in openning file");
         freebikeRentalSystem(bikeRentalSystem);
         exit(ERR_OPEN_FILE);
        }
 }
-
-
 
 
 
@@ -223,7 +217,7 @@ for (int i = 0 ; i < dim4 ; i++){
 TmonthSt * q5 = query5( bikeRentalSystem );
 char * months[]={"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "Novemeber", "December" };
 for ( int i=0; i<MONTHS; i++) {
-    if ( q5[i].FirstSt != 0 ){
+    if ( q5[i].FirstSt ){
         fprintf( files_CSV[FIFTH], "%s;%s;%s;%s\n", months[i], q5[i].FirstSt, q5[i].SecondSt, q5[i].ThirdSt );
         addHTMLRow ( files_HTML[FIFTH], months[i], q5[i].FirstSt, q5[i].SecondSt, q5[i].ThirdSt );
     } else {
@@ -234,9 +228,9 @@ for ( int i=0; i<MONTHS; i++) {
 
 
 // Fin: Cierre de los archivos de escritura
-closeFiles (files_data, FILES_PARAMETERS);
+closeFiles (files_data, FILES_READ);
 
-return 0;
+return OK;
 }
 
 
@@ -290,6 +284,7 @@ int readStation ( const char * file, int station, int id, bikeRentalSystemADT bi
     char line[MAXLINE], *token, *stationName;
     int error = 0, stationId, i=0;
 
+    fgets ( line, sizeof( line), file ); //La primera linea son titulos
     while ( fgets(line, sizeof(line), file) != NULL ){
         token = strtok(line, DELIMIT);
 
@@ -311,10 +306,11 @@ int readStation ( const char * file, int station, int id, bikeRentalSystemADT bi
 
 int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalSystem ){
     char line[MAXLINE];
-    char date[MAXDATE], endDate[MAXDATE]; //yyyy-MM-dd HH:mm:ss
+    char date[MAXLENGTH_DATE], endDate[MAXLENGTH_DATE]; //yyyy-MM-dd HH:mm:ss
     int error =0;
     int Id, endId, membership ; 
 
+    fgets ( line, sizeof( line), file ); //La primera linea son titulos
     while( fgets ( line, sizeof( line), file )!=NULL){
         char * token  = strtok( line, DELIMIT);
         while( token != NULL ) {
@@ -333,9 +329,9 @@ int readTrips( const char *file , int membercol ,bikeRentalSystemADT bikeRentalS
             if ( membercol) 
                     token=strtok(NULL, DELIMIT); //Si member col es 1 significa que no es esta columna  (voy al siguiente) 
 
-            membership  = (strcmp(  token , MEMBERCOL) == 0); //verificar si membership se manejaba con 1 y 0 ;
+            membership  = ( token[0]== MEMBER_TYPE) ; //verificar : si membership se manejaba con 1 y 0 ;
                                                         
-        error= addTrip( bikeRentalSystem, Id, endId, date, membership, endDate); //Hay que corregir la funcion addtrip para que no mezcle front y back y tome el strn como parametro y lo divida en tiempo en el back 
+        error= addTrip( bikeRentalSystem, Id, endId, date, membership, endDate); 
         }   
     }
 
