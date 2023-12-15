@@ -67,11 +67,15 @@ static int idCmp(const void *e1, const void *e2){
     return (ptr1->id - ptr2->id);
 }
 
-static int cirCmp(const void *e1, const void *e2){
+static int cirCmp(const void *e1, const void *e2){// ordena ascendentemente, primero por viajes circulares y sino alfabeticamente inverso
     const TNameId *ptr1 = (const TNameId *)e1;
     const TNameId *ptr2 = (const TNameId *)e2;
+    if (ptr1->cirTrips == ptr2->cirTrips){ // en caso tengan la misma cantidad, se decide alfabeticamente
+        return strcasecmp(ptr2->st->name, ptr1->st->name);
+    }
     return (ptr1->cirTrips - ptr2->cirTrips);
 }
+
 static TNameId *updateArr(TNameId *arr, size_t dim, TList save, int cir){
     arr = realloc(arr, sizeof(TNameId) * dim);
     arr[dim - 1].id = save->id;
@@ -351,31 +355,31 @@ size_t compare ( size_t elem1, size_t elem2 ){
     return elem1 - elem2;
 }
 
-static TList1 addRecQ1 (Tquery1node * list, char * name, size_t memTrips, size_t total ){
-    if ( list == NULL || compare(list->cantTot, total) < 0 ){
-        TNode1 new = malloc(sizeof(TNode1));
+static TList1 addRecQ1(TList1 list, char *name, size_t memTrips, size_t total){
+    int c;
+    if (list == NULL || (c = list->cantTot - total) < 0 || (c == 0 && strcasecmp(list->name, name) > 0)){ // en caso de que tengan el mismo total se decide alfabeticamente
+        TList1 new = malloc(sizeof(TNode1));
         CHECKMEMORY(new)
-        if ( errno == ENOMEM ){
+        if (errno == ENOMEM){
             return NULL;
         }
-        size_t casuales = total - memTrips;
+        size_t casTrips = total - memTrips;
         new->name = malloc(strlen(name) + 1);
         CHECKMEMORY(new->name);
         strcpy(new->name, name);
         new->cantMem = memTrips;
-        new->cantCas = casuales;
+        new->cantCas = casTrips;
         new->cantTot = total;
+        new->tail = list;
         return new;
     }
-    list->tail = addRecQ1(list->tail, name, memTrips, total );
+    list->tail = addRecQ1(list->tail, name, memTrips, total);
     return list;
 }
 
-TList1 query1 ( bikeRentalSystemADT bikeRentalSystem ){
-    TList1 ans = calloc(1, sizeof(TList1));
+Tquery1 * query1 ( bikeRentalSystemADT bikeRentalSystem ){
+    Tquery1 * ans = calloc(1, sizeof(Tquery1));
     CHECKMEMORY(query1)
-    ans->first = malloc( sizeof(TNode1));
-
     toBegin(bikeRentalSystem);
     while ( hasNext(bikeRentalSystem) ){
         size_t idx = getIdx(bikeRentalSystem);
@@ -389,29 +393,30 @@ TList1 query1 ( bikeRentalSystemADT bikeRentalSystem ){
     return ans;
 }
 
-void freeList1 ( TNode1 list ){
+void freeList1 ( TList1 list ){
     if ( list == NULL ){
         return;
     }
+    free(list->name);
     freeQuery1(list->tail);
     free(list);
 }
 
-void freeQuery1 ( TList1 list){
-    freeList1(list->first);
-    free(list);
+void freeQuery1 ( Tquery1 * q1){
+    freeList1(q1->first);
+    free(q1);
 }
 
-void toBeginQuery1 ( TList1 q1 ){
+void toBeginQuery1 ( Tquery1 * q1 ){
     q1->iter = q1->first;
     return;
 }
 
-int hasNextQuery1 ( TList1 q1 ){
+int hasNextQuery1( Tquery1 * q1){
     return q1->iter != NULL;
 }
 
-void * nextQuery1 ( TList1 q1 ){
+void *nextQuery1(Tquery1 * q1){
     q1->iter = q1->iter->tail;
 }
 
