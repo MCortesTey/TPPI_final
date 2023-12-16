@@ -117,13 +117,6 @@ int errorStation = readStation(files_data[STATIONS-1], NAME, ID, bikeRentalSyste
 //Lectura de viajes 
 readTrips( files_data[TRIPS-1], MEMBERCOL, bikeRentalSystem);
 
-// //Manejo de errores VI: Verifico si se pudieron leer los viajes
-// if (errorTrip){
-//     fprintf( stderr, "\nError: imposible to read trips file\n");
-//     error_read_File( bikeRentalSystem, files_data, ERR_TRIP_FILE ,FILES_READ);
-// }
-
-
 //Cerramos archivos de lectura
 closeFilesCSV( files_data, FILES_READ ); 
 
@@ -186,7 +179,7 @@ TQuery2 * q2 = query2( bikeRentalSystem, &dim2);
 
 for ( int i=0; i < dim2 ; i++){
     if (q2[i].nameEnd != NULL){
-        strftime(dayString, MAXLENGTH_DATE, "%x %H:%M", q2[i].oldestTrip);
+        strftime(dayString, MAXLENGTH_DATE, "%d/%m/%Y  %H:%M", q2[i].oldestTrip);
         fprintf( files_CSV[SECOND],"%s;%s;%s\n" ,q2[i].nameSt, q2[i].nameEnd, dayString);
         addHTMLRow  ( files_HTML[SECOND], q2[i].nameSt, q2[i].nameEnd, dayString);
     } else{
@@ -296,7 +289,7 @@ void closeFilesHTML (htmlTable files[], int fileCount){
 /*Lee las estaciones de un archivo y su id y las agrega al sistema ( toma por parametro las columna )*/
 int readStation ( FILE * file, int station, int id, bikeRentalSystemADT bikeRentalSystem ){
     char line[MAXLINE];
-    int error = 0, stationId, i=0;
+    int ok = 0, stationId, i=0;
 
     fgets ( line, sizeof( line), file ); //La primera linea son titulos
     while ( fgets(line, sizeof(line), file) != NULL )
@@ -316,8 +309,8 @@ int readStation ( FILE * file, int station, int id, bikeRentalSystemADT bikeRent
             } 
             token=strtok(NULL, DELIMIT);
         }
-        error = addStation(bikeRentalSystem, stationName, stationId );
-        if (error == 0 ){
+        ok = addStation(bikeRentalSystem, stationName, stationId );
+        if (ok == 0 ){ //ENCASO DE QUE FALLE POR ERROR DE MEMORIA 
             return 1;
         }
     }
