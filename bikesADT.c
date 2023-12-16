@@ -155,8 +155,8 @@ static TList addStationRec(TList list, char *name, int id, int *added, int idx, 
         errno = 0;
         TList new = malloc(sizeof(TStation));
         if (new == NULL || errno == ENOMEM){
-            memflag = 1 ;
-            return NULL;
+            (*memflag) = 1 ;
+            return NULL; // por ahi seria mejor tener una flag auxiliar para marcar errores
         }
         new->name = malloc(sizeof(char) * (strlen(name) + 1));
         strcpy(new->name, name);
@@ -186,13 +186,15 @@ int addStation(bikeRentalSystemADT bikeRentalSystem, char *name, int id){
     int cant = bikeRentalSystem->dim;
     TList save;
     bikeRentalSystem->first = addStationRec(bikeRentalSystem->first, name, id, &added, cant, &save, &memflag);
+    if ( memflag)
+    {
+        return 0;
+    }
     if (added){
         int old_dim = bikeRentalSystem->dim;
         bikeRentalSystem->dim++;
         bikeRentalSystem->trips = enlargeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim, old_dim);
         bikeRentalSystem->ids = updateArr(bikeRentalSystem->ids, bikeRentalSystem->dim, save, 0);
-    }if(!added && memflag){
-        return 0;
     }
     return 1;
 }

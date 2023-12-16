@@ -109,10 +109,10 @@ if  ( bikeRentalSystem == NULL ||  errno == ENOMEM){
 int errorStation = readStation(files_data[STATIONS-1], NAME, ID, bikeRentalSystem);
 
 //Manejo de errores V: Verifico si se pudieron leer las estaciones
-/*if ( errorStation){
+if ( errorStation){
     fprintf( stderr, "\nError: imposible to read stations file\n");
     error_read_File( bikeRentalSystem, files_data, ERR_STATION_FILE ,FILES_READ);
-}*/
+}
 
 //Lectura de viajes 
 readTrips( files_data[TRIPS-1], MEMBERCOL, bikeRentalSystem);
