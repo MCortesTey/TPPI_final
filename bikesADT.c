@@ -131,18 +131,18 @@ size_t **enlargeTrips(size_t **trips, const size_t dim, size_t old_dim)
         return NULL; // seria mejor devolverlo con una flag
     }
     for (size_t index = 0; index < dim; index++){
-        newTrips[index] = malloc(dim * sizeof(size_t **));
+        newTrips[index] = malloc(dim * sizeof(size_t));
           
         if  ( newTrips[index] == NULL || errno == ENOMEM ){
             freeTrips( newTrips, dim);
             return NULL;
         }
         if (index < old_dim){
-            memcpy(newTrips[index], trips[index], old_dim * sizeof(size_t **));
-            memset(newTrips[index] + old_dim, 0, (dim - old_dim) * sizeof(size_t **));
+            memcpy(newTrips[index], trips[index], old_dim * sizeof(size_t));
+            memset(newTrips[index] + old_dim, 0, (dim - old_dim) * sizeof(size_t));
         }
         else{
-            memset(newTrips[index], 0, dim * sizeof(size_t **));
+            memset(newTrips[index], 0, dim * sizeof(size_t));
         }
     }
     // libero la matriz vieja
