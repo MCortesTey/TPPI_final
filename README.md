@@ -14,11 +14,11 @@ Manuel Cortés Teyssier (mcortest)
 
 ## Creación de ejecutable
 
-    - Al correr el comando 'make all' se crearan dos ejecutables en el directorio, "bikeMON" y "bikeNYC".
+    - Al correr el comando 'make all' se crearan dos ejecutables en el directorio, "bikeSharingMON" y "bikeSharingNYC".
 
-    - Al correr el comando 'make MON' se creará el ejecutable "bikeMON".
+    - Al correr el comando 'make MON' se creará el ejecutable "bikeSharingMON".
 
-    - Al correr el comando 'make NYC' se creará el ejecutable "bikeNYC".
+    - Al correr el comando 'make NYC' se creará el ejecutable "bikeSharingNYC".
 
 ## Ejecución del programa
 
