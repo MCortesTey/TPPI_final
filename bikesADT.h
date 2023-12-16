@@ -7,7 +7,7 @@
 #define __bikesADT_h
 #define DAYS 7 
 #define MONTHS 12
-#define FREEYEAR -1
+#define FREEYEAR -1 // flag usado en caso de la ausencia de años como parametros
 
 typedef struct querynode1{
     char *name;     // nombre de la estacion
@@ -31,7 +31,7 @@ typedef struct query2 {
 } TQuery2;
 
 typedef struct dayTrips{
-    size_t started;
+    size_t started; // cantidad de viajes iniciados por dia de la semana(query3)
     size_t ended;
 } TDayTrips;
 
@@ -42,7 +42,7 @@ typedef struct query4{
 }TQuery4;
 
 typedef struct monthSt{
-    char * FirstSt;
+    char * FirstSt; // posicion 1 en el top de viajes circulares (query5)
     char * SecondSt;
     char * ThirdSt;
 }TmonthSt;
@@ -106,6 +106,7 @@ TQuery4 *query4(bikeRentalSystemADT bikeRentalSystem, int *dim);
 
 TmonthSt * query5 (bikeRentalSystemADT bikeRentalSystem );
 
+// liberan queries
 void freeQuery1 ( TQuery1 * q1);
 
 void freeQuery2(TQuery2 *q2, int dim2);

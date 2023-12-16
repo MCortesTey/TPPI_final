@@ -17,7 +17,7 @@ enum stations { ID = 0, NAME, LAT , LONG} ;
 enum stations { NAME = 0, LAT, LONG, ID };
 #define MEMBERCOL 1
 #define MEMBER_TYPE 'm'
-#define MAXLENGTH_DATE 27
+#define MAXLENGTH_DATE 27 
 #endif
 
 enum { OK=0,ERR_PAR, ERR_YEAR, ERR_OPEN_FILE, ERR_STATION_FILE, ERR_TRIP_FILE };
@@ -310,7 +310,7 @@ int readStation ( FILE * file, int station, int id, bikeRentalSystemADT bikeRent
             token=strtok(NULL, DELIMIT);
         }
         ok = addStation(bikeRentalSystem, stationName, stationId );
-        if (ok == 0 ){ //ENCASO DE QUE FALLE POR ERROR DE MEMORIA 
+        if (ok == 0 ){ // En caso de que falle por error de memoria 
             return 1;
         }
     }
@@ -324,7 +324,7 @@ void readTrips( FILE *file , int membercol ,bikeRentalSystemADT bikeRentalSystem
     char date[MAXLENGTH_DATE], endDate[MAXLENGTH_DATE]; //yyyy-MM-dd HH:mm:ss
     int Id, endId, membership ; 
 
-    fgets ( line, sizeof( line), file ); //La primera linea son titulos
+    fgets ( line, sizeof( line), file ); // Saltea la primera linea de titulos
 
     while( fgets ( line, sizeof( line), file )!=NULL)
     {
@@ -346,11 +346,10 @@ void readTrips( FILE *file , int membercol ,bikeRentalSystemADT bikeRentalSystem
             token=strtok(NULL, DELIMIT);
 
             if ( membercol) {
-                    token=strtok(NULL, DELIMIT); //Si member col es 1 significa que no es esta columna  (voy al siguiente) 
+                    token=strtok(NULL, DELIMIT); //Si member col es 1 significa que no esta en la columa correcta 
             }
 
             membership  = ( token[0]== MEMBER_TYPE) ; //verificar : si membership se manejaba con 1 y 0 ;
-            
             
             token = strtok(NULL, DELIMIT);
                 
