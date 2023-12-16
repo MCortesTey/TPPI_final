@@ -124,13 +124,17 @@ void freeTrips(size_t **matrix, int dim){
 }
 
 static int setTrips( bikeRentalSystemADT system ){
+    errno = 0;
     int dim = system->dim;
     system->trips = malloc(dim * sizeof(size_t*));
-    CHECKMEMORY(system->trips);
-
+    if(system->trips == NULL || errno == ENOMEM){
+        return 0;
+    }
     for (int i = 0; i < dim; i++){
         system->trips[i] = (size_t *)calloc(dim, sizeof(size_t));
-        CHECKMEMORY(system->trips[i]);
+        if (system->trips[i] == NULL || errno == ENOMEM){
+            return 0;
+        }
     }
     return 1 ;
 }
