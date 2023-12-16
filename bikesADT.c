@@ -329,6 +329,7 @@ void addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char 
     int cMonStart, cMonEnd;
     int yearStart, yearEnd;
 
+
     start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
     if ( start == NULL ||((end = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, endId, 0))==NULL))//si start es null ya entra y sino significan que no son iguales
         {
