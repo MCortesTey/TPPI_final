@@ -1,5 +1,5 @@
-#TRABAJO PRACTICO FINAL
-#PROGRAMACION IMPERATIVA 
+# TRABAJO PRACTICO FINAL
+# PROGRAMACION IMPERATIVA 
 
 ## Integrantes:
 
@@ -14,7 +14,7 @@ Manuel Cortés Teyssier (mcortest)
 
 ## Creación de ejecutable
 
-    - Al correr el comando 'make all' se crearan dos ejecutables en el directorio "bikeMON" y "bikeNYC".
+    - Al correr el comando 'make all' se crearan dos ejecutables en el directorio, "bikeMON" y "bikeNYC".
 
     - Al correr el comando 'make MON' se creará el ejecutable "bikeMON".
 
@@ -23,14 +23,10 @@ Manuel Cortés Teyssier (mcortest)
 ## Ejecución del programa
 
     - Para ejecutar Montreal
-    ```sh
     ./bikeMON bikesMON.csv stationsMON.csv primer_año (opcional) segundo_año (opcional)
-    ```
-
+    
     - Para ejecutar Nueva York
-    ```sh
     ./bikeNYC bikesNYC.csv stationsNYC.csv primer_año (opcional) segundo_año (opcional)
-    ```
 
 ## Eliminacion de archivos
 
