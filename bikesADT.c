@@ -121,33 +121,6 @@ void freeTrips(size_t **matrix, int dim){
     free(matrix);
 }
 
-size_t **enlargeTrips(size_t **trips, const size_t dim, size_t old_dim)
-{
-    size_t **newTrips = calloc(dim, sizeof(size_t *));
-
-    if (newTrips == NULL || errno == ENOMEM){
-        freeTrips( newTrips, dim);
-
-        return NULL; 
-    }
-    for (size_t index = 0; index < dim; index++){
-        newTrips[index] = malloc(dim * sizeof(size_t));
-          
-        if  ( newTrips[index] == NULL || errno == ENOMEM ){
-            freeTrips( newTrips, dim);
-            return NULL;
-        }
-        if (index < old_dim){
-            memcpy(newTrips[index], trips[index], old_dim * sizeof(size_t));
-            memset(newTrips[index] + old_dim, 0, (dim - old_dim) * sizeof(size_t));
-        }
-        else{
-            memset(newTrips[index], 0, dim * sizeof(size_t));
-        }
-    }
-    freeTrips( trips, old_dim);
-    return newTrips;
-}
 
 static void setTrips( bikeRentalSystemADT system ){
     int dim = system->dim;
@@ -201,9 +174,7 @@ int addStation(bikeRentalSystemADT bikeRentalSystem, char *name, int id){
         return 0;
     }
     if (added){
-        int old_dim = bikeRentalSystem->dim;
         bikeRentalSystem->dim++;
-        //bikeRentalSystem->trips = enlargeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim, old_dim);
         bikeRentalSystem->ids = updateArr(bikeRentalSystem->ids, bikeRentalSystem->dim, save, 0);
     }
     return 1;
@@ -291,15 +262,22 @@ void addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char 
     TList start, end;
     int cir = 0;
     start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
-    if (start == NULL)
+    if (start == NULL){
         return;
-    if (startId == endId){
-        cir = 1;
-        end = start;
-    }else{
+    }
+
+    if (startId != endId)
+    {
         end = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
         if (end == NULL)
-            return;
+            {
+                return;
+            }
+    }
+    else
+    {
+        cir = 1;
+        end = start;
     }
 
     struct tm oldestCandidate;
