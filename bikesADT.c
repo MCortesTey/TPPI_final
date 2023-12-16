@@ -142,7 +142,7 @@ static TList addStationRec(TList list, char *name, int id, int *added, int idx, 
         TList new = malloc(sizeof(TStation));
         if (new == NULL || errno == ENOMEM){
             (*memflag) = 1 ;
-            return NULL; // por ahi seria mejor tener una flag auxiliar para marcar errores
+            return NULL;
         }
         new->name = malloc(sizeof(char) * (strlen(name) + 1));
         strcpy(new->name, name);
@@ -217,11 +217,11 @@ static void checkOldest(TList list, time_t date, struct tm datestruct, TList end
     return;
 }
 
-static time_t dateControl(bikeRentalSystemADT system, char * strDate, int start, struct tm *candidate, int * cMon, int *year){// start = 1 si es de inicio, 0 si es de end
+static time_t dateControl(bikeRentalSystemADT system, char * strDate, int start, struct tm *candidate, int * cMon, int *year){
     struct tm date = mkTimeStruct(strDate);
     (*cMon) = date.tm_mon;
     (*year) = date.tm_year+1900;
-    if (start){
+    if (start){ //si es de inicio la estacion, es candidato a viaje mas antiguo
         (*candidate) = date;
     }
     time_t timeValue = mktime(&date);
@@ -230,18 +230,21 @@ static time_t dateControl(bikeRentalSystemADT system, char * strDate, int start,
     return timeValue;
 }
 
-static void checkPop(TList list, size_t ntrips, TList end){
-    if (list->tripsPopularEnd <= ntrips){ // si es que son iguales tengo que verificar que sea alfabeticamente menor
-        if (list->tripsPopularEnd == 0){ //primer registro
+static void checkPop(TList list, size_t ntrips, TList end){//funcion para controlar el destino mas popular
+    if (list->tripsPopularEnd <= ntrips){ // verifica si es candidato por la cantidad de viajes
+        if (list->tripsPopularEnd == 0){ //caso en que no tenia un popular 
+            list->popularEnd = end->name; 
+            list->tripsPopularEnd = ntrips;
+            return;
+        }if (list->tripsPopularEnd < ntrips){
             list->popularEnd = end->name;
             list->tripsPopularEnd = ntrips;
             return;
         }
         int c;
-        if ((c = strcasecmp(list->popularEnd, end->name)) == 0){ // si son el mismo tengo que sumar
+        if ((c = strcasecmp(list->popularEnd, end->name)) == 0){ // si ya era el popular, incrementa la cantidad
             list->tripsPopularEnd++;
-        }
-        else if (c > 0){ // si viene antes alfabeticamente hay nuevo popular
+        }else if (c > 0){ // si viene antes alfabeticamente hay nuevo popular
             list->popularEnd = end->name;
             list->tripsPopularEnd = ntrips;
         }
@@ -259,7 +262,7 @@ static TTopMonth countCircularTop(TTopMonth mon, TList start){
 }
 
 void addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char * startDate, int isMember, char * endDate){
-    if (bikeRentalSystem->trips == NULL){ //si la matriz no fue inicializada porque recien va arrancar a subir viajes
+    if (bikeRentalSystem->trips == NULL){ //la matriz se inicializa cuando arranca a recibir viajes
         setTrips(bikeRentalSystem);
     }
     TList start, end;
