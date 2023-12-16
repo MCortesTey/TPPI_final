@@ -203,13 +203,15 @@ int addStation(bikeRentalSystemADT bikeRentalSystem, char *name, int id){
     int cant = bikeRentalSystem->dim;
     TList save;
     bikeRentalSystem->first = addStationRec(bikeRentalSystem->first, name, id, &added, cant, &save, &memflag);
+    if ( memflag)
+    {
+        return 0;
+    }
     if (added){
         int old_dim = bikeRentalSystem->dim;
         bikeRentalSystem->dim++;
         bikeRentalSystem->trips = enlargeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim, old_dim);
         bikeRentalSystem->ids = updateArr(bikeRentalSystem->ids, bikeRentalSystem->dim, save, 0);
-    }if(!added && memflag){
-        return 0;
     }
     return 1;
 }
