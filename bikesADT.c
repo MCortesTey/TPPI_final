@@ -171,7 +171,7 @@ static TList addStationRec(TList list, char *name, int id, int *added, int idx, 
         errno = 0;
         TList new = malloc(sizeof(TStation));
         if (new == NULL || errno == ENOMEM){
-            memflag = 1 ;
+            (*memflag) = 1 ;
             return NULL; // por ahi seria mejor tener una flag auxiliar para marcar errores
         }
         new->name = malloc(sizeof(char) * (strlen(name) + 1));
