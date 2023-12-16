@@ -165,12 +165,13 @@ size_t **enlargeTrips(size_t **trips, const size_t dim, size_t old_dim)
 // }
 
 
-static TList addStationRec(TList list, char *name, int id, int *added, int idx, TList * save){
+static TList addStationRec(TList list, char *name, int id, int *added, int idx, TList * save, int * memflag){
     int c;
     if (list == NULL || (c = strcasecmp(list->name, name)) > 0){
         errno = 0;
         TList new = malloc(sizeof(TStation));
         if (new == NULL || errno == ENOMEM){
+            memflag = 1 ;
             return NULL; // por ahi seria mejor tener una flag auxiliar para marcar errores
         }
         new->name = malloc(sizeof(char) * (strlen(name) + 1));
@@ -192,22 +193,25 @@ static TList addStationRec(TList list, char *name, int id, int *added, int idx, 
     if (c == 0){
         return list;
     }
-    list->tail = addStationRec(list->tail, name, id, added, idx, save);
+    list->tail = addStationRec(list->tail, name, id, added, idx, save, memflag);
     return list;
 }
 
 int addStation(bikeRentalSystemADT bikeRentalSystem, char *name, int id){
     int added = 0;
+    int memflag = 0;
     int cant = bikeRentalSystem->dim;
     TList save;
-    bikeRentalSystem->first = addStationRec(bikeRentalSystem->first, name, id, &added, cant, &save);
+    bikeRentalSystem->first = addStationRec(bikeRentalSystem->first, name, id, &added, cant, &save, &memflag);
     if (added){
         int old_dim = bikeRentalSystem->dim;
         bikeRentalSystem->dim++;
         bikeRentalSystem->trips = enlargeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim, old_dim);
         bikeRentalSystem->ids = updateArr(bikeRentalSystem->ids, bikeRentalSystem->dim, save, 0);
+    }if(!added && memflag){
+        return 0;
     }
-    return added;
+    return 1;
 }
 
 static struct tm mkTimeStruct(char * date){ //funcion para armar la estructura del nuevo dia
