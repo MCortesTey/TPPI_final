@@ -124,6 +124,14 @@ static TList binarySearch(TNameId *arr, int low, int high, int id, int cir){ // 
     return NULL;
 }
 
+void freeTrips( size_t ** trips, size_t dim){
+    for ( size_t i=0 ; i < dim; i++)
+    {
+        free( trips[i]);
+    }
+    free(trips);
+}
+
 size_t **enlargeTrips(size_t **trips, const size_t dim, size_t old_dim)
 {
     size_t **newTrips = calloc(dim, sizeof(size_t *));
@@ -155,18 +163,8 @@ size_t **enlargeTrips(size_t **trips, const size_t dim, size_t old_dim)
     // free(trips);
     // return newTrips;
     freeTrips( trips, old_dim);
+    return newTrips;
 }
-
-
-void freeTrips( size_t ** trips, size_t dim){
-    for ( size_t i=0 ; i < dim; i++)
-    {
-        free( trips[i]);
-    }
-    free(trips);
-
-}
-
 
 static TList addStationRec(TList list, char *name, int id, int *added, int idx, TList * save){
     int c;
@@ -676,7 +674,8 @@ static void freeMonths(TTopMonth *months){
     }
 }
 
-void freeTrips(size_t **matrix, int dim){
+
+void freeMatrix(size_t **matrix, int dim){
     for (int i = 0; i < dim; i++){
         free(matrix[i]);
     }
