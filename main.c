@@ -317,6 +317,7 @@ int readStation ( FILE * file, int station, int id, bikeRentalSystemADT bikeRent
             token=strtok(NULL, DELIMIT);
         }
         error = addStation(bikeRentalSystem, stationName, stationId );
+        printf("%d", error);
         if (error == 0 ){
             return 1;
         }
