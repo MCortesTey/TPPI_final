@@ -44,7 +44,7 @@ void closeFilesHTML (  htmlTable files[], int fileCount);//recibe una lista de a
 void closeFilesCSV (  FILE *files[], int fileCount);//recibe una lista de archivos CSV y los cierra
 FILE * newfileCSV(const char * fileName, char * header );// Recibe el nombre del .CSV y los titulos y lo abre, si falla retorna null
 int readStation ( FILE * file, int station, int id, bikeRentalSystemADT bikeRentalSystem ); // lee el archivo csv de estaciones 
-void readTrips( FILE *file , int membercol ,bikeRentalSystemADT bikeRentalSystem ); // lee el archivo csv de trips
+int readTrips( FILE *file , int membercol ,bikeRentalSystemADT bikeRentalSystem ); // lee el archivo csv de trips
 void error_read_File ( bikeRentalSystemADT bikeRentalSystem, FILE *files[], int error, int count );
 void close_write_files ( bikeRentalSystemADT bikeRentalSystem,  FILE *filesCSV[], htmlTable filesHTML[], int error, int count );
 int isNum( const char* str);
@@ -115,7 +115,12 @@ if ( errorStation){
 }
 
 //Lectura de viajes 
-readTrips( files_data[TRIPS-1], MEMBERCOL, bikeRentalSystem);
+int empty= readTrips( files_data[TRIPS-1], MEMBERCOL, bikeRentalSystem);
+
+if ( empty){
+    fprintf( stderr, "\nError: File has no trips\n");
+    error_read_File( bikeRentalSystem, files_data, ERR_TRIP_FILE ,FILES_READ);
+}
 
 //Cerramos archivos de lectura
 closeFilesCSV( files_data, FILES_READ ); 
@@ -319,15 +324,17 @@ int readStation ( FILE * file, int station, int id, bikeRentalSystemADT bikeRent
 
 
 
-void readTrips( FILE *file , int membercol ,bikeRentalSystemADT bikeRentalSystem ){
+int readTrips( FILE *file , int membercol ,bikeRentalSystemADT bikeRentalSystem ){
     char line[MAXLINE];
     char date[MAXLENGTH_DATE], endDate[MAXLENGTH_DATE]; //yyyy-MM-dd HH:mm:ss
     int Id, endId, membership ; 
+    int empty=1;
 
     fgets ( line, sizeof( line), file ); // Saltea la primera linea de titulos
 
     while( fgets ( line, sizeof( line), file )!=NULL)
     {
+        empty=0; //Verifica que no sea un archivo vacio, si lo es e
         char * token  = strtok( line, DELIMIT);
         while( token != NULL )
         {
@@ -358,7 +365,7 @@ void readTrips( FILE *file , int membercol ,bikeRentalSystemADT bikeRentalSystem
             }   
     }
 
- return ;
+ return empty ;
 }
 
 /*Cierra los archivos de lectura y limpia el sistema en caso de error*/
