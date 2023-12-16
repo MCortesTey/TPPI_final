@@ -271,7 +271,7 @@ void addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char 
 
     if (startId != endId)
     {
-        end = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
+        end = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, endId, 0);
         if (end == NULL)
             {
                 return;
