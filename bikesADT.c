@@ -61,6 +61,10 @@ bikeRentalSystemADT newBikeRentalSystem ( int minYear, int maxYear ){
     return new;
 }
 
+int getDim(bikeRentalSystemADT bikeRentalSystem){
+    return bikeRentalSystem->dim;
+}
+
 static int idCmp(const void *e1, const void *e2){
     const TNameId *ptr1 = (const TNameId *)e1;
     const TNameId *ptr2 = (const TNameId *)e2;
@@ -120,7 +124,6 @@ void freeTrips(size_t **matrix, int dim){
     }
     free(matrix);
 }
-
 
 static void setTrips( bikeRentalSystemADT system ){
     int dim = system->dim;
@@ -323,21 +326,21 @@ void * next (bikeRentalSystemADT bikeRentalSystem) {
     return ans;
 }
 
-char * getName (bikeRentalSystemADT bikeRentalSystem){
+static char * getName (bikeRentalSystemADT bikeRentalSystem){
     if ( ! hasNext(bikeRentalSystem)){
         return NULL;
     }
     return bikeRentalSystem->iter->name;
 }
 
-size_t getMemTrips ( bikeRentalSystemADT bikeRentalSystem ){
+static size_t getMemTrips ( bikeRentalSystemADT bikeRentalSystem ){
     if ( ! hasNext(bikeRentalSystem) ){
         return 0;
     }
     return bikeRentalSystem->iter->memTrips;
 }
 
-size_t getIdx ( bikeRentalSystemADT bikeRentalSystem ){
+static size_t getIdx ( bikeRentalSystemADT bikeRentalSystem ){
     if ( ! hasNext(bikeRentalSystem) ){
         return 0;
     }
@@ -346,10 +349,6 @@ size_t getIdx ( bikeRentalSystemADT bikeRentalSystem ){
 
 
 // Query 1: Total de Viajes iniciados por estacion
-
-size_t compare ( size_t elem1, size_t elem2 ){
-    return elem1 - elem2;
-}
 
 static TList1 addRecQ1(TList1 list, char *name, size_t memTrips, size_t total){
     int c;
@@ -389,7 +388,7 @@ TQuery1 * query1 ( bikeRentalSystemADT bikeRentalSystem ){
     return ans;
 }
 
-void freeList1 ( TList1 list ){
+static void freeList1 ( TList1 list ){
     if ( list == NULL ){
         return;
     }
@@ -424,7 +423,7 @@ void *nextQuery1(TQuery1 * q1){
 
 // Query 2: Viaje mas antiguo por estación 
 
-char * getOldestEnd (bikeRentalSystemADT bikeRentalSystem ){
+static char * getOldestEnd (bikeRentalSystemADT bikeRentalSystem ){
     if ( ! hasNext(bikeRentalSystem)){
         return NULL;
     }
@@ -488,7 +487,7 @@ void freeQuery3 ( TDayTrips * vec ){
 
 // Query 4: Ruta mas popular por estación
 
-char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem ){
+static char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem ){
     if ( ! hasNext(bikeRentalSystem)){
         return NULL;
     }
