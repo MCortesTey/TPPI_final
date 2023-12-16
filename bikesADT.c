@@ -342,10 +342,8 @@ void addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char 
     size_t ntrips = ++bikeRentalSystem->trips[idxStart][idxEnd]; // sumo en la matriz
     start->memTrips += isMember;
 
-    if (startId == endId)
-    {
-        if (cMonStart == cMonEnd && difftime(endTimeValue, startTimeValue) <= SECONDSINAMONTH && (checkYear(yearStart, bikeRentalSystem->yearMIN, bikeRentalSystem->yearMAX) && checkYear(yearEnd, bikeRentalSystem->yearMIN, bikeRentalSystem->yearMAX)))
-        {
+    if (startId == endId){
+        if (cMonStart == cMonEnd && difftime(endTimeValue, startTimeValue) <= SECONDSINAMONTH && (checkYear(yearStart, bikeRentalSystem->yearMIN, bikeRentalSystem->yearMAX) && checkYear(yearEnd, bikeRentalSystem->yearMIN, bikeRentalSystem->yearMAX))){
             bikeRentalSystem->circularTrips[cMonStart] = countCircularTop(bikeRentalSystem->circularTrips[cMonStart], start);
         }
     }
