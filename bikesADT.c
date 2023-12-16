@@ -589,7 +589,10 @@ static void freeMonths(TTopMonth *months){
 
 void freeBikeRentalSystem(bikeRentalSystemADT bikeRentalSystem){
     freeStations(bikeRentalSystem->first);
-    freeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim);
+    if( bikeRentalSystem->trips!=NULL)
+    {
+        freeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim);
+    }
     freeMonths(bikeRentalSystem->circularTrips);
     free(bikeRentalSystem->ids);
     free(bikeRentalSystem);
