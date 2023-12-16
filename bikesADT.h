@@ -57,7 +57,7 @@ bikeRentalSystemADT newBikeRentalSystem(int minYear, int maxYear);
 int addStation(bikeRentalSystemADT bikeRentalSystem, char * name, int id);
 
 //registra un viaje y devuelve 1 si se agrego con exito.
-int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char *startDate, int isMember, char *endDate);
+void addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char *startDate, int isMember, char *endDate);
 
 // apunta al primer elemento
 void toBegin (bikeRentalSystemADT bikeRentalSystem);

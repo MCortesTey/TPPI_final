@@ -113,6 +113,7 @@ static TList binarySearch(TNameId *arr, int low, int high, int id, int cir){ // 
             }
             return arr[mid].st;
         }
+        
         if (arr[mid].id < id){
             low = mid + 1;
         }
@@ -273,38 +274,92 @@ static TTopMonth countCircularTop(TTopMonth mon, TList start){
     return mon;
 }
 
-int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char * startDate, int isMember, char * endDate){
+// int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char * startDate, int isMember, char * endDate){
+//     TList start, end;
+//     struct tm oldestCandidate;
+//     int cMonStart, cMonEnd;
+
+//     time_t startTimeValue = dateControl(bikeRentalSystem, startDate, 1, &oldestCandidate, &cMonStart);
+//     time_t endTimeValue = dateControl(bikeRentalSystem, endDate, 0, &oldestCandidate, &cMonEnd);
+
+//     if (startId == endId)
+//     { // si es viaje circular
+//         start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
+//         end = start;
+
+//         if (start == NULL || end == NULL)
+//         {
+//             return 0;
+//         }
+
+//         if ( cMonStart == cMonEnd && difftime(endTimeValue, startTimeValue) <= SECONDSINAMONTH)
+//         {
+//             bikeRentalSystem->circularTrips[cMonStart] = countCircularTop(bikeRentalSystem->circularTrips[cMonStart], start);
+//         }
+//     }
+//     else
+//     {
+//         start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
+//         end = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, endId, 0);
+//         if (start == NULL || end == NULL)
+//         {
+//             return 0;
+//         }
+//         checkOldest(start, startTimeValue, oldestCandidate, end);
+//     }
+
+
+//     int idxStart = start->idx; // consigo indices
+//     int idxEnd = end->idx;
+//     size_t ntrips = ++bikeRentalSystem->trips[idxStart][idxEnd]; // sumo en la matriz
+//     start->memTrips += isMember;
+
+//     if (startId != endId)
+//     { // si no es circular lo considero candidato para viaje mas antiguo y/o ruta mas popular
+//         checkPop(start, ntrips, end);
+//     }
+//     return 1;
+// }
+
+
+
+void addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char * startDate, int isMember, char * endDate){
     TList start, end;
     struct tm oldestCandidate;
     int cMonStart, cMonEnd;
 
+    start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
+    if ( start == NULL ||((end = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, endId, 0))==NULL))//ES LAZY, Si start es null ya entra y sino significan qeu no son iguals 
+        {
+            return ;
+        }
+    
     time_t startTimeValue = dateControl(bikeRentalSystem, startDate, 1, &oldestCandidate, &cMonStart);
     time_t endTimeValue = dateControl(bikeRentalSystem, endDate, 0, &oldestCandidate, &cMonEnd);
-    if (startId == endId){ // si es viaje circular
-        start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
-        end = start;
-        if (start == NULL || end == NULL)
-            return 0;
-        if ( cMonStart == cMonEnd && difftime(endTimeValue, startTimeValue) <= SECONDSINAMONTH){
-            bikeRentalSystem->circularTrips[cMonStart] = countCircularTop(bikeRentalSystem->circularTrips[cMonStart], start);
-        }
-    }else{
-        start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
-        end = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, endId, 0);
-        if (start == NULL || end == NULL)
-            return 0;
-        checkOldest(start, startTimeValue, oldestCandidate, end);
-    }
-
     int idxStart = start->idx; // consigo indices
     int idxEnd = end->idx;
     size_t ntrips = ++bikeRentalSystem->trips[idxStart][idxEnd]; // sumo en la matriz
     start->memTrips += isMember;
-    if (startId != endId){ // si no es circular lo considero candidato para viaje mas antiguo y/o ruta mas popular
-        checkPop(start, ntrips, end);
+
+    if (startId == endId)
+    {
+        if ( cMonStart == cMonEnd && difftime(endTimeValue, startTimeValue) <= SECONDSINAMONTH)
+        {
+            bikeRentalSystem->circularTrips[cMonStart] = countCircularTop(bikeRentalSystem->circularTrips[cMonStart], start);
+        }
     }
-    return 1;
+    else 
+    {
+        checkPop(start, ntrips, end);
+        checkOldest(start, startTimeValue, oldestCandidate, end);
+    }
+
+    return ;
 }
+
+
+
+
 
 
 void toBegin (bikeRentalSystemADT bikeRentalSystem) {
@@ -520,10 +575,10 @@ TQuery4 *query4(bikeRentalSystemADT bikeRentalSystem, int *dim){
         CHECKMEMORY(ans[i].nameSt);
         strcpy(ans[i].nameSt, getName(bikeRentalSystem));
         if (getPopularEnd(bikeRentalSystem) == NULL){ //caso por alguna razon sea una estacion sin salidas
-            ans[i].nameEnd = 0;
+            ans[i].nameEnd = NULL;
         }else{
             ans[i].nameEnd = malloc(strlen(getPopularEnd(bikeRentalSystem)) + 1);
-            CHECKMEMORY(ans->nameEnd);
+            CHECKMEMORY(ans[i].nameEnd);
             strcpy(ans[i].nameEnd, getPopularEnd(bikeRentalSystem));
         }
         ans[i++].countTrips = bikeRentalSystem->iter->tripsPopularEnd;
@@ -536,7 +591,7 @@ TQuery4 *query4(bikeRentalSystemADT bikeRentalSystem, int *dim){
 void freeQuery4(TQuery4 *vec, int dim){
     for (int i = 0; i < dim; i++){
         free(vec[i].nameSt);
-        if (vec[i].nameEnd != 0){
+        if (vec[i].nameEnd != NULL){
             free(vec[i].nameEnd);
         }
     }

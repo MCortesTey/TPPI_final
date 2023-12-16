@@ -44,7 +44,7 @@ void closeFilesHTML (  htmlTable files[], int fileCount);//recibe una lista de a
 void closeFilesCSV (  FILE *files[], int fileCount);//recibe una lista de archivos CSV y los cierra
 FILE * newfileCSV(const char * fileName, char * header );// Recibe el nombre del .CSV y los titulos y lo abre, si falla retorna null
 int readStation ( FILE * file, int station, int id, bikeRentalSystemADT bikeRentalSystem ); // lee el archivo csv de estaciones 
-int readTrips( FILE *file , int membercol ,bikeRentalSystemADT bikeRentalSystem ); // lee el archivo csv de trips
+void readTrips( FILE *file , int membercol ,bikeRentalSystemADT bikeRentalSystem ); // lee el archivo csv de trips
 void error_read_File ( bikeRentalSystemADT bikeRentalSystem, FILE *files[], int error, int count );
 void close_write_files ( bikeRentalSystemADT bikeRentalSystem,  FILE *filesCSV[], htmlTable filesHTML[], int error, int count );
 int isNum( const char* str);
@@ -115,13 +115,14 @@ if ( errorStation){
 }
 
 //Lectura de viajes 
-int errorTrip = readTrips( files_data[TRIPS-1], MEMBERCOL, bikeRentalSystem);
+readTrips( files_data[TRIPS-1], MEMBERCOL, bikeRentalSystem);
 
-//Manejo de errores VI: Verifico si se pudieron leer los viajes
-if (errorTrip){
-    fprintf( stderr, "\nError: imposible to read trips file\n");
-    error_read_File( bikeRentalSystem, files_data, ERR_TRIP_FILE ,FILES_READ);
-}
+// //Manejo de errores VI: Verifico si se pudieron leer los viajes
+// if (errorTrip){
+//     fprintf( stderr, "\nError: imposible to read trips file\n");
+//     error_read_File( bikeRentalSystem, files_data, ERR_TRIP_FILE ,FILES_READ);
+// }
+
 
 //Cerramos archivos de lectura
 closeFilesCSV( files_data, FILES_READ ); 
@@ -213,6 +214,7 @@ freeQuery3(q3);
 // Upload Query 4 
 int dim4;
 TQuery4 * q4 = query4 ( bikeRentalSystem , &dim4);
+
 for (int i = 0 ; i < dim4 ; i++){
     if( q4[i].nameEnd != NULL ){
         fprintf( files_CSV[FOURTH], "%s;%s;%ld\n", q4[i].nameSt , q4[i].nameEnd, q4[i].countTrips );
@@ -324,10 +326,9 @@ int readStation ( FILE * file, int station, int id, bikeRentalSystemADT bikeRent
 
 
 
-int readTrips( FILE *file , int membercol ,bikeRentalSystemADT bikeRentalSystem ){
+void readTrips( FILE *file , int membercol ,bikeRentalSystemADT bikeRentalSystem ){
     char line[MAXLINE];
-    char date[27], endDate[27]; //yyyy-MM-dd HH:mm:ss
-    int error =0;
+    char date[MAXLENGTH_DATE], endDate[MAXLENGTH_DATE]; //yyyy-MM-dd HH:mm:ss
     int Id, endId, membership ; 
 
     fgets ( line, sizeof( line), file ); //La primera linea son titulos
@@ -339,15 +340,16 @@ int readTrips( FILE *file , int membercol ,bikeRentalSystemADT bikeRentalSystem 
         {
             
             strcpy( date, token);
+
             token=strtok(NULL, DELIMIT);
-            
             Id = atoi(token);
-            token=strtok(NULL, DELIMIT);
 
+            token=strtok(NULL, DELIMIT);
             strcpy( endDate, token);
-            token=strtok(NULL, DELIMIT);
 
+            token=strtok(NULL, DELIMIT);
             endId = atoi( token);
+
             token=strtok(NULL, DELIMIT);
 
             if ( membercol) {
@@ -355,17 +357,16 @@ int readTrips( FILE *file , int membercol ,bikeRentalSystemADT bikeRentalSystem 
             }
 
             membership  = ( token[0]== MEMBER_TYPE) ; //verificar : si membership se manejaba con 1 y 0 ;
-                                                        
-            error= addTrip( bikeRentalSystem, Id, endId, date, membership, endDate);
-            if (error == 0)
-            {
-                return 1;
-            }
+            
+            
             token = strtok(NULL, DELIMIT);
-        }   
+                
+            addTrip( bikeRentalSystem, Id, endId, date, membership, endDate);
+            
+            }   
     }
 
- return 0;
+ return ;
 }
 
 /*Cierra los archivos de lectura y limpia el sistema en caso de error*/
