@@ -56,6 +56,9 @@ bikeRentalSystemADT newBikeRentalSystem(int minYear, int maxYear);
 //retorna 1 si se agrego, 0 si ya estaba registrada
 int addStation(bikeRentalSystemADT bikeRentalSystem, char * name, int id);
 
+//devuelve la cantidad de estaciones registradas
+int getDim (bikeRentalSystemADT bikeRentalSystem);
+
 //registra un viaje y devuelve 1 si se agrego con exito.
 void addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char *startDate, int isMember, char *endDate);
 
@@ -71,18 +74,6 @@ void * next (bikeRentalSystemADT bikeRentalSystem);
 // libera el conjunto
 void freeBikeRentalSystem ( bikeRentalSystemADT bikeRentalSystem );
 
-// retorna nombre de la estacion donde iter apunta
-char * getName (bikeRentalSystemADT bikeRentalSystem);
-
-// retorna cantidad de viajes empezados por miembros de la estacion donde iter apunta
-size_t getMemTrips ( bikeRentalSystemADT bikeRentalSystem );
-
-// retorna indice correspondiente a la estacion donde iter apunta, en la matriz de trips
-size_t getIdx ( bikeRentalSystemADT bikeRentalSystem );
-
-// retorna nombre de estacion de fin mas popular
-char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem );
-
 // apunta al primer elemento de query1
 void toBeginQuery1 ( TQuery1 * q1 );
 
@@ -91,9 +82,6 @@ int hasNextQuery1( TQuery1 * q1);
 
 //apunta al siguiente elemento
 void *nextQuery1(TQuery1 * q1);
-
-// retorna nombre de estacion de fin mas antigua
-char * getOldestEnd (bikeRentalSystemADT bikeRentalSystem );
 
 // queries
 TQuery1 * query1 ( bikeRentalSystemADT bikeRentalSystem );

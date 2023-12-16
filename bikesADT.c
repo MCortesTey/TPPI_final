@@ -61,6 +61,10 @@ bikeRentalSystemADT newBikeRentalSystem ( int minYear, int maxYear ){
     return new;
 }
 
+int getDim(bikeRentalSystemADT bikeRentalSystem){
+    return bikeRentalSystem->dim;
+}
+
 static int idCmp(const void *e1, const void *e2){
     const TNameId *ptr1 = (const TNameId *)e1;
     const TNameId *ptr2 = (const TNameId *)e2;
@@ -121,34 +125,6 @@ void freeTrips(size_t **matrix, int dim){
     free(matrix);
 }
 
-size_t **enlargeTrips(size_t **trips, const size_t dim, size_t old_dim)
-{
-    size_t **newTrips = calloc(dim, sizeof(size_t *));
-
-    if (newTrips == NULL || errno == ENOMEM){
-        freeTrips( newTrips, dim);
-
-        return NULL; 
-    }
-    for (size_t index = 0; index < dim; index++){
-        newTrips[index] = malloc(dim * sizeof(size_t));
-          
-        if  ( newTrips[index] == NULL || errno == ENOMEM ){
-            freeTrips( newTrips, dim);
-            return NULL;
-        }
-        if (index < old_dim){
-            memcpy(newTrips[index], trips[index], old_dim * sizeof(size_t));
-            memset(newTrips[index] + old_dim, 0, (dim - old_dim) * sizeof(size_t));
-        }
-        else{
-            memset(newTrips[index], 0, dim * sizeof(size_t));
-        }
-    }
-    freeTrips( trips, old_dim);
-    return newTrips;
-}
-
 static void setTrips( bikeRentalSystemADT system ){
     int dim = system->dim;
     system->trips = malloc(dim * sizeof(size_t*));
@@ -201,7 +177,7 @@ int addStation(bikeRentalSystemADT bikeRentalSystem, char *name, int id){
         return 0;
     }
     if (added){
-        int old_dim = bikeRentalSystem->dim;
+        //int old_dim = bikeRentalSystem->dim;
         bikeRentalSystem->dim++;
         //bikeRentalSystem->trips = enlargeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim, old_dim);
         bikeRentalSystem->ids = updateArr(bikeRentalSystem->ids, bikeRentalSystem->dim, save, 0);
@@ -345,21 +321,21 @@ void * next (bikeRentalSystemADT bikeRentalSystem) {
     return ans;
 }
 
-char * getName (bikeRentalSystemADT bikeRentalSystem){
+static char * getName (bikeRentalSystemADT bikeRentalSystem){
     if ( ! hasNext(bikeRentalSystem)){
         return NULL;
     }
     return bikeRentalSystem->iter->name;
 }
 
-size_t getMemTrips ( bikeRentalSystemADT bikeRentalSystem ){
+static size_t getMemTrips ( bikeRentalSystemADT bikeRentalSystem ){
     if ( ! hasNext(bikeRentalSystem) ){
         return 0;
     }
     return bikeRentalSystem->iter->memTrips;
 }
 
-size_t getIdx ( bikeRentalSystemADT bikeRentalSystem ){
+static size_t getIdx ( bikeRentalSystemADT bikeRentalSystem ){
     if ( ! hasNext(bikeRentalSystem) ){
         return 0;
     }
@@ -368,10 +344,6 @@ size_t getIdx ( bikeRentalSystemADT bikeRentalSystem ){
 
 
 // Query 1: Total de Viajes iniciados por estacion
-
-size_t compare ( size_t elem1, size_t elem2 ){
-    return elem1 - elem2;
-}
 
 static TList1 addRecQ1(TList1 list, char *name, size_t memTrips, size_t total){
     int c;
@@ -411,7 +383,7 @@ TQuery1 * query1 ( bikeRentalSystemADT bikeRentalSystem ){
     return ans;
 }
 
-void freeList1 ( TList1 list ){
+static void freeList1 ( TList1 list ){
     if ( list == NULL ){
         return;
     }
@@ -446,7 +418,7 @@ void *nextQuery1(TQuery1 * q1){
 
 // Query 2: Viaje mas antiguo por estación 
 
-char * getOldestEnd (bikeRentalSystemADT bikeRentalSystem ){
+static char * getOldestEnd (bikeRentalSystemADT bikeRentalSystem ){
     if ( ! hasNext(bikeRentalSystem)){
         return NULL;
     }
@@ -510,7 +482,7 @@ void freeQuery3 ( TDayTrips * vec ){
 
 // Query 4: Ruta mas popular por estación
 
-char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem ){
+static char * getPopularEnd (bikeRentalSystemADT bikeRentalSystem ){
     if ( ! hasNext(bikeRentalSystem)){
         return NULL;
     }
