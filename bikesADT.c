@@ -124,6 +124,13 @@ static TList binarySearch(TNameId *arr, int low, int high, int id, int cir){ // 
     return NULL;
 }
 
+void freeTrips(size_t **matrix, int dim){
+    for (int i = 0; i < dim; i++){
+        free(matrix[i]);
+    }
+    free(matrix);
+}
+
 size_t **enlargeTrips(size_t **trips, const size_t dim, size_t old_dim)
 {
     size_t **newTrips = calloc(dim, sizeof(size_t *));
@@ -153,19 +160,19 @@ size_t **enlargeTrips(size_t **trips, const size_t dim, size_t old_dim)
     //     free(trips[index]);
     // }
     // free(trips);
-    // return newTrips;
     freeTrips( trips, old_dim);
+    return newTrips;
 }
 
 
-void freeTrips( size_t ** trips, size_t dim){
-    for ( size_t i=0 ; i < dim; i++)
-    {
-        free( trips[i]);
-    }
-    free(trips);
+// void freeTrips( size_t ** trips, size_t dim){
+//     for ( size_t i=0 ; i < dim; i++)
+//     {
+//         free( trips[i]);
+//     }
+//     free(trips);
 
-}
+// }
 
 
 static TList addStationRec(TList list, char *name, int id, int *added, int idx, TList * save){
@@ -174,7 +181,6 @@ static TList addStationRec(TList list, char *name, int id, int *added, int idx, 
         errno = 0;
         TList new = malloc(sizeof(TStation));
         if (new == NULL || errno == ENOMEM){
-            printf("mmmmmmm,,,\n");
             return NULL; // por ahi seria mejor tener una flag auxiliar para marcar errores
         }
         new->name = malloc(sizeof(char) * (strlen(name) + 1));
@@ -194,7 +200,6 @@ static TList addStationRec(TList list, char *name, int id, int *added, int idx, 
         return new;
     }
     if (c == 0){
-        printf("acaa\n");
         return list;
     }
     list->tail = addStationRec(list->tail, name, id, added, idx, save);
@@ -208,10 +213,7 @@ int addStation(bikeRentalSystemADT bikeRentalSystem, char *name, int id){
     bikeRentalSystem->first = addStationRec(bikeRentalSystem->first, name, id, &added, cant, &save);
     if (added){
         int old_dim = bikeRentalSystem->dim;
-        printf ( "%d:old\n", old_dim );
-
         bikeRentalSystem->dim++;
-        //printf ( "%ld:new\n", bikeRentalSystem->dim );
         bikeRentalSystem->trips = enlargeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim, old_dim);
         bikeRentalSystem->ids = updateArr(bikeRentalSystem->ids, bikeRentalSystem->dim, save, 0);
     }
@@ -676,12 +678,7 @@ static void freeMonths(TTopMonth *months){
     }
 }
 
-void freeTrips(size_t **matrix, int dim){
-    for (int i = 0; i < dim; i++){
-        free(matrix[i]);
-    }
-    free(matrix);
-}
+
 
 void freeBikeRentalSystem(bikeRentalSystemADT bikeRentalSystem){
     freeStations(bikeRentalSystem->first);

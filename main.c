@@ -11,7 +11,7 @@
 #ifdef MON
 enum stations { ID = 0, NAME, LAT , LONG} ; 
 #define MEMBERCOL 0 
-#define MEMBER_TYPE '0'
+#define MEMBER_TYPE '1'
 #define MAXLENGTH_DATE 20 //longitud maxima de string de fechas para guardar en archivos html
 #else 
 enum stations { NAME = 0, LAT, LONG, ID };
@@ -317,7 +317,6 @@ int readStation ( FILE * file, int station, int id, bikeRentalSystemADT bikeRent
             token=strtok(NULL, DELIMIT);
         }
         error = addStation(bikeRentalSystem, stationName, stationId );
-        printf("%d", error);
         if (error == 0 ){
             return 1;
         }
