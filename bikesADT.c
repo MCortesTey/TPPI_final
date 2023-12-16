@@ -123,7 +123,7 @@ void freeTrips(size_t **matrix, int dim){
     free(matrix);
 }
 
-static void setTrips( bikeRentalSystemADT system ){
+static int setTrips( bikeRentalSystemADT system ){
     int dim = system->dim;
     system->trips = malloc(dim * sizeof(size_t*));
     CHECKMEMORY(system->trips);
@@ -132,7 +132,7 @@ static void setTrips( bikeRentalSystemADT system ){
         system->trips[i] = (size_t *)calloc(dim, sizeof(size_t));
         CHECKMEMORY(system->trips[i]);
     }
-    return;
+    return 1 ;
 }
 
 
@@ -264,7 +264,8 @@ static TTopMonth countCircularTop(TTopMonth mon, TList start){
 
 int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char * startDate, int isMember, char * endDate){
     if (bikeRentalSystem->trips == NULL){ //la matriz se inicializa cuando arranca a recibir viajes
-        setTrips(bikeRentalSystem);
+        if(setTrips(bikeRentalSystem) == NULL);
+        return 0;
     }
     TList start, end;
     int cir = 0;
