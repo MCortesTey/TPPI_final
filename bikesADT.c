@@ -82,25 +82,15 @@ static TNameId *updateArr(TNameId *arr, size_t dim, TList save, int cir){
     arr[dim - 1].st = save;
     if (cir){
         arr[dim - 1].cirTrips++;
-        qsort(arr, dim, sizeof(TNameId), cirCmp);
     }
-    else{
-        qsort(arr, dim, sizeof(TNameId), idCmp);
-    }
+     qsort(arr, dim, sizeof(TNameId), idCmp);
     return arr;
 }
 
 
 
-int inRange( int year, int min, int max)
-{
-    return ( year>=min && year<=max);
-}
-
-
-int checkYear( int year , int min,  int max ){
+static int checkYear( int year , int min,  int max ){
         return (  min==FREEYEAR ||  (year >= min && (  max==FREEYEAR || year <= max)));
-
 }
 
 
@@ -255,9 +245,10 @@ static void checkOldest(TList list, time_t date, struct tm datestruct, TList end
     }
     return;
 }
-static time_t dateControl(bikeRentalSystemADT system, char * strDate, int start, struct tm *candidate, int * cMon){// start = 1 si es de inicio, 0 si es de end
+static time_t dateControl(bikeRentalSystemADT system, char * strDate, int start, struct tm *candidate, int * cMon, int *year){// start = 1 si es de inicio, 0 si es de end
     struct tm date = mkTimeStruct(strDate);
     (*cMon) = date.tm_mon;
+    (*year) = date.tm_year+1900;
     if (start){
         (*candidate) = date;
     }
@@ -288,9 +279,7 @@ static void checkPop(TList list, size_t ntrips, TList end){
 
 static TTopMonth countCircularTop(TTopMonth mon, TList start){
     TList aux = binarySearch(mon.Top, 0, mon.dim - 1, start->id, 1); // busco si ya es candidato en el mes
-    if (aux != NULL){ // en caso de que estuviera solo ordeno
-        qsort(mon.Top, mon.dim, sizeof(TNameId), cirCmp);
-    }else{
+    if (aux == NULL){ // en caso de que no estuviera lo sumo
         mon.dim++;
         mon.Top = updateArr(mon.Top, mon.dim, start, 1);
     }
@@ -350,6 +339,7 @@ void addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char 
     TList start, end;
     struct tm oldestCandidate;
     int cMonStart, cMonEnd;
+    int yearStart, yearEnd;
 
     start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
     if ( start == NULL ||((end = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, endId, 0))==NULL))//ES LAZY, Si start es null ya entra y sino significan qeu no son iguals 
@@ -357,8 +347,8 @@ void addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char 
             return ;
         }
     
-    time_t startTimeValue = dateControl(bikeRentalSystem, startDate, 1, &oldestCandidate, &cMonStart);
-    time_t endTimeValue = dateControl(bikeRentalSystem, endDate, 0, &oldestCandidate, &cMonEnd);
+    time_t startTimeValue = dateControl(bikeRentalSystem, startDate, 1, &oldestCandidate, &cMonStart, &yearStart);
+    time_t endTimeValue = dateControl(bikeRentalSystem, endDate, 0, &oldestCandidate, &cMonEnd, &yearEnd);
     int idxStart = start->idx; // consigo indices
     int idxEnd = end->idx;
     size_t ntrips = ++bikeRentalSystem->trips[idxStart][idxEnd]; // sumo en la matriz
@@ -366,14 +356,16 @@ void addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char 
 
     if (startId == endId)
     {
-        if ( cMonStart == cMonEnd && difftime(endTimeValue, startTimeValue) <= SECONDSINAMONTH)
+        if (cMonStart == cMonEnd && difftime(endTimeValue, startTimeValue) <= SECONDSINAMONTH && (checkYear(yearStart, bikeRentalSystem->yearMIN, bikeRentalSystem->yearMAX) && checkYear(yearEnd, bikeRentalSystem->yearMIN, bikeRentalSystem->yearMAX)))
         {
             bikeRentalSystem->circularTrips[cMonStart] = countCircularTop(bikeRentalSystem->circularTrips[cMonStart], start);
         }
     }
     else 
     {
-        checkPop(start, ntrips, end);
+        if (checkYear(yearStart, bikeRentalSystem->yearMIN, bikeRentalSystem->yearMAX) && checkYear(yearEnd, bikeRentalSystem->yearMIN, bikeRentalSystem->yearMAX)){
+            checkPop(start, ntrips, end);
+        }
         checkOldest(start, startTimeValue, oldestCandidate, end);
     }
 
@@ -632,6 +624,7 @@ TmonthSt * query5 (bikeRentalSystemADT bikeRentalSystem ){
     for (int i=0; i<MONTHS ; i++){
         if ( bikeRentalSystem->circularTrips[i].dim >= 3){
             size_t dim = bikeRentalSystem->circularTrips[i].dim;
+            qsort(bikeRentalSystem->circularTrips[i].Top, dim, sizeof(TNameId), cirCmp );
 
             ans[i].FirstSt = malloc (strlen(bikeRentalSystem->circularTrips[i].Top[dim-1].st->name) + 1);
             CHECKMEMORY(ans[i].FirstSt);
