@@ -149,6 +149,15 @@ size_t **enlargeTrips(size_t **trips, const size_t dim, size_t old_dim)
     return newTrips;
 }
 
+static void setTrips( bikeRentalSystemADT system ){
+    int dim = system->dim;
+    system->trips = malloc(dim * sizeof(size_t*));
+    for (int i = 0; i < dim; i++){
+        system->trips[i] = (size_t *)calloc(dim, sizeof(size_t));
+    }
+    return;
+}
+
 
 static TList addStationRec(TList list, char *name, int id, int *added, int idx, TList * save, int * memflag){
     int c;
@@ -194,7 +203,7 @@ int addStation(bikeRentalSystemADT bikeRentalSystem, char *name, int id){
     if (added){
         int old_dim = bikeRentalSystem->dim;
         bikeRentalSystem->dim++;
-        bikeRentalSystem->trips = enlargeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim, old_dim);
+        //bikeRentalSystem->trips = enlargeTrips(bikeRentalSystem->trips, bikeRentalSystem->dim, old_dim);
         bikeRentalSystem->ids = updateArr(bikeRentalSystem->ids, bikeRentalSystem->dim, save, 0);
     }
     return 1;
@@ -276,9 +285,9 @@ static TTopMonth countCircularTop(TTopMonth mon, TList start){
 }
 
 void addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char * startDate, int isMember, char * endDate){
-    // if (bikeRentalSystem->trips == NULL){ //si la matriz no fue inicializada porque recien va arrancar a subir viajes
-    //     //enlargeTrips();
-    // }
+    if (bikeRentalSystem->trips == NULL){ //si la matriz no fue inicializada porque recien va arrancar a subir viajes
+        setTrips(bikeRentalSystem);
+    }
     TList start, end;
     int cir = 0;
     start = binarySearch(bikeRentalSystem->ids, 0, bikeRentalSystem->dim - 1, startId, 0);
