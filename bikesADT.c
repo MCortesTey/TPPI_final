@@ -130,6 +130,7 @@ static void setTrips( bikeRentalSystemADT system ){
 
     for (int i = 0; i < dim; i++){
         system->trips[i] = (size_t *)calloc(dim, sizeof(size_t));
+        CHECKMEMORY(system->trips[i]);
     }
     return;
 }
@@ -254,14 +255,14 @@ static void checkPop(TList list, size_t ntrips, TList end){//funcion para contro
 
 static TTopMonth countCircularTop(TTopMonth mon, TList start){
     TList aux = binarySearch(mon.Top, 0, mon.dim - 1, start->id, 1); // busca si ya es candidato en el mes
-    if (aux == NULL){ 
+    if (aux == NULL){  //si no era candidato, es añadido y ordenado
         mon.dim++;
         mon.Top = updateArr(mon.Top, mon.dim, start, 1);
     }
     return mon;
 }
 
-void addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char * startDate, int isMember, char * endDate){
+int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char * startDate, int isMember, char * endDate){
     if (bikeRentalSystem->trips == NULL){ //la matriz se inicializa cuando arranca a recibir viajes
         setTrips(bikeRentalSystem);
     }
