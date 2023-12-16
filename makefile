@@ -1,7 +1,7 @@
 COMPILER = gcc
 FLAGS= -Wall -pedantic -std=c99 -fsanitize=address -g
-OUTPUT_FILE_MON = bikeMON
-OUTPUT_FILE_NYC = bikeNYC
+OUTPUT_FILE_MON = bikeSharingMON
+OUTPUT_FILE_NYC = bikeSharingNYC
 DEPENDENCIES = bikesADT.c main.c htmlTable.c
 
 
