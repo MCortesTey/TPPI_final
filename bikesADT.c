@@ -82,7 +82,8 @@ static int cirCmp(const void *e1, const void *e2){// ordena ascendentemente, pri
 
 static TNameId *updateArr(TNameId *arr, size_t dim, TList save, int cir){
     arr = realloc(arr, sizeof(TNameId) * dim);
-    //memory
+    CHECKMEMORY(arr);
+
     arr[dim - 1].id = save->id;
     arr[dim - 1].st = save;
     if (cir){
@@ -92,12 +93,9 @@ static TNameId *updateArr(TNameId *arr, size_t dim, TList save, int cir){
     return arr;
 }
 
-
-
 static int checkYear( int year , int min,  int max ){
         return (  min==FREEYEAR ||  (year >= min && (  max==FREEYEAR || year <= max)));
 }
-
 
 static TList binarySearch(TNameId *arr, int low, int high, int id, int cir){ // funcion para buscar la estacion por el ID de forma eficiente
     while (low <= high){
@@ -128,6 +126,8 @@ void freeTrips(size_t **matrix, int dim){
 static void setTrips( bikeRentalSystemADT system ){
     int dim = system->dim;
     system->trips = malloc(dim * sizeof(size_t*));
+    CHECKMEMORY(system->trips);
+
     for (int i = 0; i < dim; i++){
         system->trips[i] = (size_t *)calloc(dim, sizeof(size_t));
     }
@@ -358,6 +358,7 @@ static TList1 addRecQ1(TList1 list, char *name, size_t memTrips, size_t total){
         if (errno == ENOMEM){
             return NULL;
         }
+        
         size_t casTrips = total - memTrips;
         new->name = malloc(strlen(name) + 1);
         CHECKMEMORY(new->name);
@@ -375,6 +376,7 @@ static TList1 addRecQ1(TList1 list, char *name, size_t memTrips, size_t total){
 TQuery1 * query1 ( bikeRentalSystemADT bikeRentalSystem ){
     TQuery1 * ans = calloc(1, sizeof(TQuery1));
     CHECKMEMORY(query1)
+
     toBegin(bikeRentalSystem);
     while ( hasNext(bikeRentalSystem) ){
         size_t idx = getIdx(bikeRentalSystem);
