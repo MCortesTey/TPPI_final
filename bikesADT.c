@@ -266,10 +266,10 @@ static TTopMonth countCircularTop(TTopMonth mon, TList start){
     return mon;
 }
 
-int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char * startDate, int isMember, char * endDate){
+void addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char * startDate, int isMember, char * endDate){
     if (bikeRentalSystem->trips == NULL){ //la matriz se inicializa cuando arranca a recibir viajes
-        if(setTrips(bikeRentalSystem) == NULL);
-        return 0;
+        if(setTrips(bikeRentalSystem) == 0);
+        return ;
     }
     TList start, end;
     int cir = 0;

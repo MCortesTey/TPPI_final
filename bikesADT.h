@@ -60,7 +60,7 @@ int addStation(bikeRentalSystemADT bikeRentalSystem, char * name, int id);
 int getDim (bikeRentalSystemADT bikeRentalSystem);
 
 //registra un viaje y devuelve 0 si hubo un error de memoria, 1 si se agrego o no dependiendo si estaban registradas las estaciones.
-int addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char *startDate, int isMember, char *endDate);
+void addTrip(bikeRentalSystemADT bikeRentalSystem, int startId, int endId, char *startDate, int isMember, char *endDate);
 
 // apunta al primer elemento
 void toBegin (bikeRentalSystemADT bikeRentalSystem);
